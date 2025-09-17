@@ -144,31 +144,42 @@ If you encounter issues with Entity Framework tools, install them globally:
 dotnet tool install --global dotnet-ef
 ```
 
-### Step 5: Populate Database with Sample Data
+### Step 5: Database Setup Options
 
-After creating the database schema, you can populate it with sample data using the provided SQL files:
+You have two options for setting up the database:
 
-#### Option A: Full Sample Data (Recommended for Development)
+#### Option A: Complete Database Setup (Recommended for New Setup)
+Use the complete SQL files that include both table creation and sample data:
+
 ```bash
-# Using psql command line
-psql -U postgres -d ProjectNexusDB -f Data/seed_data.sql
+# Full database with complete sample data
+psql -U postgres -d ProjectNexusDB -f PlaceholderData/complete_database_setup.sql
 
-# Or using pgAdmin
-# 1. Open pgAdmin
-# 2. Connect to your database
-# 3. Right-click on ProjectNexusDB → Tools → Query Tool
-# 4. Open and run the file: backend/ProjectNexus.API/Data/seed_data.sql
+# Or minimal database with basic sample data
+psql -U postgres -d ProjectNexusDB -f PlaceholderData/minimal_database_setup.sql
 ```
 
-#### Option B: Minimal Sample Data (Quick Testing)
-```bash
-# Using psql command line
-psql -U postgres -d ProjectNexusDB -f Data/sample_data.sql
-```
+#### Option B: Use Entity Framework Migrations + Sample Data
+If you prefer to use Entity Framework migrations:
+
+1. **Run migrations first:**
+   ```bash
+   dotnet ef database update
+   ```
+
+2. **Then add sample data:**
+   ```bash
+   # Full sample data
+   psql -U postgres -d ProjectNexusDB -f PlaceholderData/seed_data.sql
+   
+   # Or minimal sample data
+   psql -U postgres -d ProjectNexusDB -f PlaceholderData/sample_data.sql
+   ```
 
 **What the sample data includes:**
-- **Full Dataset** (`seed_data.sql`): 8 users, 8 projects, 40 tasks, 24 notes, 32 files
-- **Minimal Dataset** (`sample_data.sql`): 3 users, 3 projects, 6 tasks, 3 notes, 3 files
+- **Complete Setup** (`complete_database_setup.sql`): Creates tables + 8 users, 8 projects, 40 tasks, 24 notes, 32 files
+- **Minimal Setup** (`minimal_database_setup.sql`): Creates tables + 3 users, 3 projects, 6 tasks, 3 notes, 3 files
+- **Data Only** (`seed_data.sql` / `sample_data.sql`): Sample data only (requires existing tables)
 
 **Sample Data Overview:**
 - **Users**: Project Managers, Researchers, Developers, Designers

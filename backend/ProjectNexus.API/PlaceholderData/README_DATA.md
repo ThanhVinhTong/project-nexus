@@ -1,15 +1,30 @@
-# Database Sample Data
+# Database Setup and Sample Data
 
-This directory contains SQL files with placeholder data for the Project Nexus database.
+This directory contains SQL files for setting up the Project Nexus database with sample data.
 
 ## Files
 
+### Complete Database Setup (Recommended)
+- **`complete_database_setup.sql`** - Creates all tables + complete sample data
+- **`minimal_database_setup.sql`** - Creates all tables + minimal sample data
+
+### Data Only (Requires Existing Tables)
 - **`seed_data.sql`** - Complete dataset with realistic sample data
 - **`sample_data.sql`** - Minimal dataset for quick testing
 
 ## Quick Start
 
-1. **Set up the database** (if not already done):
+### Option 1: Complete Setup (Recommended for New Setup)
+```bash
+# Full database with complete sample data
+psql -U postgres -d ProjectNexusDB -f PlaceholderData/complete_database_setup.sql
+
+# Or minimal database with basic sample data
+psql -U postgres -d ProjectNexusDB -f PlaceholderData/minimal_database_setup.sql
+```
+
+### Option 2: Use Entity Framework + Sample Data
+1. **Set up the database schema**:
    ```bash
    dotnet ef database update
    ```
@@ -17,10 +32,10 @@ This directory contains SQL files with placeholder data for the Project Nexus da
 2. **Load sample data**:
    ```bash
    # Full dataset (recommended)
-   psql -U postgres -d ProjectNexusDB -f Data/seed_data.sql
+   psql -U postgres -d ProjectNexusDB -f PlaceholderData/seed_data.sql
    
    # Or minimal dataset
-   psql -U postgres -d ProjectNexusDB -f Data/sample_data.sql
+   psql -U postgres -d ProjectNexusDB -f PlaceholderData/sample_data.sql
    ```
 
 ## Data Overview
