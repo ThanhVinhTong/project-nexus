@@ -144,6 +144,39 @@ If you encounter issues with Entity Framework tools, install them globally:
 dotnet tool install --global dotnet-ef
 ```
 
+### Step 5: Populate Database with Sample Data
+
+After creating the database schema, you can populate it with sample data using the provided SQL files:
+
+#### Option A: Full Sample Data (Recommended for Development)
+```bash
+# Using psql command line
+psql -U postgres -d ProjectNexusDB -f Data/seed_data.sql
+
+# Or using pgAdmin
+# 1. Open pgAdmin
+# 2. Connect to your database
+# 3. Right-click on ProjectNexusDB → Tools → Query Tool
+# 4. Open and run the file: backend/ProjectNexus.API/Data/seed_data.sql
+```
+
+#### Option B: Minimal Sample Data (Quick Testing)
+```bash
+# Using psql command line
+psql -U postgres -d ProjectNexusDB -f Data/sample_data.sql
+```
+
+**What the sample data includes:**
+- **Full Dataset** (`seed_data.sql`): 8 users, 8 projects, 40 tasks, 24 notes, 32 files
+- **Minimal Dataset** (`sample_data.sql`): 3 users, 3 projects, 6 tasks, 3 notes, 3 files
+
+**Sample Data Overview:**
+- **Users**: Project Managers, Researchers, Developers, Designers
+- **Projects**: AI Research, Mobile App Development, Data Analytics, UX Study, etc.
+- **Tasks**: Various project tasks with different statuses (Pending, In Progress, Completed)
+- **Notes**: Project notes with versioning
+- **Files**: Project-related files with realistic names and paths
+
 ## 🏃‍♂️ Running the Application
 
 ### Development Mode
@@ -282,6 +315,35 @@ dotnet tool install --global dotnet-ef
 dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
+
+#### 5. Sample Data Loading Issues
+
+**Error**: `relation "Users" does not exist` or similar table errors
+
+**Solutions**:
+- Ensure migrations have been applied first: `dotnet ef database update`
+- Check that you're connected to the correct database
+- Verify the SQL file path is correct
+
+**Error**: `permission denied` when running SQL files
+
+**Solutions**:
+- Ensure your PostgreSQL user has the necessary permissions
+- Try running: `psql -U postgres -d ProjectNexusDB -f Data/seed_data.sql`
+- If using pgAdmin, make sure you're connected as a superuser
+
+**Error**: `duplicate key value violates unique constraint`
+
+**Solutions**:
+- The data might already exist. Clear existing data first:
+  ```sql
+  DELETE FROM "Files";
+  DELETE FROM "Notes";
+  DELETE FROM "Tasks";
+  DELETE FROM "Projects";
+  DELETE FROM "Users";
+  ```
+- Or use the minimal sample data instead: `sample_data.sql`
 
 ### Environment-Specific Issues
 
