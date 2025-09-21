@@ -86,23 +86,26 @@
     {
       "Id": 1,
       "ProjectId": 1,
-      "UserId": 101,
-      "Message": "Project started and initial planning completed.",
+      "Message": "Project AI Ethics in Healthcare created",
       "CreatedAt": "2025-09-21T00:00:00Z"
     },
     {
       "Id": 2,
       "ProjectId": 1,
-      "UserId": 102,
-      "Message": "Added new reference document.",
-      "CreatedAt": "2025-09-22T00:00:00Z"
+      "Message": "Added task: Review Literature",
+      "CreatedAt": "2025-09-21T01:00:00Z"
     },
     {
       "Id": 3,
       "ProjectId": 2,
-      "UserId": 101,
-      "Message": "Task assigned to team member.",
-      "CreatedAt": "2025-09-23T00:00:00Z"
+      "Message": "Project Climate Data Analysis started",
+      "CreatedAt": "2025-09-21T02:00:00Z"
+    },
+    {
+      "Id": 4,
+      "ProjectId": 2,
+      "Message": "Reference added: climate_report.docx",
+      "CreatedAt": "2025-09-21T03:00:00Z"
     }
   ]
 }

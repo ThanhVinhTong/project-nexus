@@ -35,7 +35,7 @@ export function MainNavigation() {
       activeIcon: HomeIconSolid
     },
     { 
-      name: 'Documents', 
+      name: 'Schedule', 
       href: '/documents', 
       icon: DocumentTextIcon,
       activeIcon: DocumentTextIconSolid
