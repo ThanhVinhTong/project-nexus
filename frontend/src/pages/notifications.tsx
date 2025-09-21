@@ -1,11 +1,11 @@
 "use client";
 
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { CheckIcon, CheckCircleIcon, TrashIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { mockNotifications } from "../lib/mock-data";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { mockNotifications } from "@/lib/mock-data";
 
 const mockUpdates = [
   {
