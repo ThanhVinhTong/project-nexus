@@ -1,0 +1,108 @@
+{
+  "projects": [
+    {
+      "Id": 1,
+      "Title": "AI Ethics in Healthcare",
+      "Description": "Research on ethical implications of AI in medical decisions",
+      "Deadline": "2025-12-31T00:00:00Z",
+      "Status": "planning"
+    },
+    {
+      "Id": 2,
+      "Title": "Climate Data Analysis",
+      "Description": "Analyzing climate patterns using big data",
+      "Deadline": "2026-03-15T00:00:00Z",
+      "Status": "in-progress"
+    }
+  ],
+  "tasks": [
+    {
+      "Id": 1,
+      "ProjectId": 1,
+      "UserName": 101,
+      "Title": "Review Literature",
+      "Status": "Pending",
+      "Priority": "High",
+      "DueDate": "2025-10-15T00:00:00Z"
+    },
+    {
+      "Id": 2,
+      "ProjectId": 1,
+      "UserName": 102,
+      "Title": "Collect Data Samples",
+      "Status": "In Progress",
+      "Priority": "Default",
+      "DueDate": "2025-11-01T00:00:00Z"
+    },
+    {
+      "Id": 3,
+      "ProjectId": 2,
+      "UserName": 101,
+      "Title": "Analyze Temperature Data",
+      "Status": "Pending",
+      "Priority": "Medium",
+      "DueDate": "2025-10-30T00:00:00Z"
+    }
+  ],
+  "references": [
+    {
+      "Id": 1,
+      "ProjectId": 1,
+      "FileName": "ai_ethics.pdf",
+      "Url": "https://example.com/ai_ethics.pdf",
+      "Description": "Paper on AI ethics in healthcare",
+      "Authors": ["John Doe", "Jane Smith"]
+    },
+    {
+      "Id": 2,
+      "ProjectId": 2,
+      "FileName": "climate_report.docx",
+      "Url": "https://example.com/climate_report.docx",
+      "Description": "Annual climate change report",
+      "Authors": ["Climate Org"]
+    }
+  ],
+  "notes": [
+    {
+      "Id": 1,
+      "ProjectId": 1,
+      "Content": "Note about initial project meeting: Discussed scope and timelines.",
+      "CreatedAt": "2025-09-21T00:00:00Z"
+    },
+    {
+      "Id": 2,
+      "ProjectId": 1,
+      "Content": "Reminder: Schedule ethics review for next week.",
+      "CreatedAt": "2025-09-21T00:00:00Z"
+    },
+    {
+      "Id": 3,
+      "ProjectId": 2,
+      "Content": "Data sources to check: NOAA and EPA databases.",
+      "CreatedAt": "2025-09-21T00:00:00Z"
+    }
+  ],
+  "activities": [
+    {
+      "Id": 1,
+      "ProjectId": 1,
+      "UserId": 101,
+      "Message": "Project started and initial planning completed.",
+      "CreatedAt": "2025-09-21T00:00:00Z"
+    },
+    {
+      "Id": 2,
+      "ProjectId": 1,
+      "UserId": 102,
+      "Message": "Added new reference document.",
+      "CreatedAt": "2025-09-22T00:00:00Z"
+    },
+    {
+      "Id": 3,
+      "ProjectId": 2,
+      "UserId": 101,
+      "Message": "Task assigned to team member.",
+      "CreatedAt": "2025-09-23T00:00:00Z"
+    }
+  ]
+}

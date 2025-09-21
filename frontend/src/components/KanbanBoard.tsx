@@ -152,7 +152,7 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
               ))}
               <Button variant="outline" className="w-full justify-start text-gray-500">
                 <PlusIcon className="w-4 h-4 mr-2" />
-                Add a task
+                1, 2, 3
               </Button>
             </div>
           </div>
@@ -202,7 +202,7 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
               ))}
               <Button variant="outline" className="w-full justify-start text-gray-500">
                 <PlusIcon className="w-4 h-4 mr-2" />
-                Add a task
+                View more tasks
               </Button>
             </div>
           </div>
