@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
-import { Progress } from "../components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { PlusIcon, MagnifyingGlassIcon, DocumentTextIcon, UsersIcon, CalendarIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
-import { Input } from "../components/ui/input";
-import { mockProjects } from "../lib/mock-data";
+import { Input } from "@/components/ui/input";
+import { mockProjects } from "@/lib/mock-data";
 
 export default function DashboardPage() {
   const router = useRouter();

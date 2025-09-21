@@ -6,7 +6,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "./button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (

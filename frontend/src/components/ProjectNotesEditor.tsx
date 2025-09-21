@@ -1,9 +1,9 @@
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Card, CardContent } from "./ui/card";
-import { Textarea } from "./ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeftIcon, BookmarkIcon, EyeIcon, ClockIcon, MagnifyingGlassIcon, PlusIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
-import { Badge } from "./ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 
 interface ProjectNotesEditorProps {
