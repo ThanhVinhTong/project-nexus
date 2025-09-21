@@ -72,7 +72,7 @@ export default function NotesPage() {
                       <DocumentTextIcon className="w-4 h-4 text-gray-500 mt-1 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">{note.title}</h4>
-                        <p className="text-xs text-gray-500 mt-1">{new Date(note.updatedAt).toLocaleDateString()}</p>
+                        <p className="text-xs text-gray-500 mt-1">{new Date(note.updatedAt).toLocaleDateString('en-US')}</p>
                         <div className="flex gap-1 mt-2">
                           {note.tags.slice(0, 2).map((tag) => (
                             <Badge key={tag} variant="outline" className="text-xs">
