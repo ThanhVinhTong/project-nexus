@@ -1,4 +1,4 @@
-export type Screen = 'login' | 'dashboard' | 'project-detail' | 'kanban' | 'documents' | 'notes' | 'project-notes' | 'notifications';
+export type Screen = 'login' | 'dashboard' | 'project-detail' | 'kanban' | 'schedule' | 'notes' | 'project-notes' | 'notifications';
 
 export interface Project {
   id: string;

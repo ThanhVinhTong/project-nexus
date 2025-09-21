@@ -35,16 +35,16 @@ export function MainNavigation() {
       activeIcon: HomeIconSolid
     },
     { 
-      name: 'Schedule', 
-      href: '/documents', 
-      icon: DocumentTextIcon,
-      activeIcon: DocumentTextIconSolid
-    },
-    { 
       name: 'Notes', 
       href: '/notes', 
       icon: PencilSquareIcon,
       activeIcon: PencilSquareIconSolid
+    },
+    { 
+      name: 'Schedule', 
+      href: '/schedule', 
+      icon: DocumentTextIcon,
+      activeIcon: DocumentTextIconSolid
     },
     { 
       name: 'Notifications', 
