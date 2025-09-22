@@ -1,23 +1,14 @@
 namespace ProjectNexus.API.Models;
 
-public enum Status
-{
-    Planning,
-    Ongoing,
-    Completed,
-    Reopend
-}
-
 public class Project
 {
     public int Id { get; set; }
     public string Title { get; set; } = null!;
-    public string Description { get; set; } = null!;
-    public DateTime Deadline { get; set; }
-    public Status Status { get; set; } = Status.Planning;
+    public string? Description { get; set; }
+    public DateTime? Deadline { get; set; }
+    public string Status { get; set; } = null!;
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
-
     public ICollection<Task> Tasks { get; set; } = new List<Task>();
     public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
     public ICollection<Note> Notes { get; set; } = new List<Note>();
