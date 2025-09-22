@@ -1,8 +1,8 @@
-import { Button } from "./ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { ArrowLeftIcon, PlusIcon, EllipsisHorizontalIcon, CalendarIcon, UserIcon } from "@heroicons/react/24/outline";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { PlusIcon, EllipsisHorizontalIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface KanbanBoardProps {
   projectId: string;

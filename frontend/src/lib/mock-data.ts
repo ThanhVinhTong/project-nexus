@@ -1,4 +1,4 @@
-import { Project, Task, Note, Reference, Notification } from './types';
+import { Project, Task, Note, Reference, Notification } from '@/lib/types';
 
 export const mockProjects: Project[] = [
   {

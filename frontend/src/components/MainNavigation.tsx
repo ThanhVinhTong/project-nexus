@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   HomeIcon, 
   DocumentTextIcon, 
