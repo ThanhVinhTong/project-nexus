@@ -1,13 +1,13 @@
 namespace ProjectNexus.API.Models;
 
-public class ProjectUser
+public class UserTask
 {
-    public int ProjectId { get; set; }
+    public int TaskId { get; set; }
     public int UserId { get; set; }
-    public UserRole UserPermission { get; set; } = UserRole.Viewer;
+    public string Comment { get; set; } = null!;
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    public Project Project { get; set; } = null!;
+    public Task Task { get; set; } = null!;
     public User User { get; set; } = null!;
 }
