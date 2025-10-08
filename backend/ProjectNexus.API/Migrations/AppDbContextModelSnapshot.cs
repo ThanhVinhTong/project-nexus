@@ -89,15 +89,15 @@ namespace ProjectNexus.API.Migrations
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("Deadline")
+                    b.Property<DateTime?>("Deadline")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -113,24 +113,34 @@ namespace ProjectNexus.API.Migrations
 
             modelBuilder.Entity("ProjectNexus.API.Models.ProjectUser", b =>
                 {
-                    b.Property<int>("ProjectId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserPermission")
+                    b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.HasKey("ProjectId", "UserId");
+                    b.Property<string>("UserPermission")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("ProjectId", "UserId")
+                        .IsUnique();
 
                     b.ToTable("ProjectUsers");
                 });
@@ -143,11 +153,13 @@ namespace ProjectNexus.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Authors")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("ProjectId")
@@ -161,7 +173,6 @@ namespace ProjectNexus.API.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Url")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -182,11 +193,11 @@ namespace ProjectNexus.API.Migrations
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("DueDate")
+                    b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Priority")
-                        .HasColumnType("integer");
+                    b.Property<string>("Priority")
+                        .HasColumnType("text");
 
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
@@ -195,15 +206,11 @@ namespace ProjectNexus.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<string>("Type")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -227,15 +234,17 @@ namespace ProjectNexus.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("HashedPassword")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("LegalName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("ReferenceId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -245,8 +254,6 @@ namespace ProjectNexus.API.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ReferenceId");
 
                     b.ToTable("Users");
                 });
@@ -260,7 +267,6 @@ namespace ProjectNexus.API.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Comment")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -339,13 +345,6 @@ namespace ProjectNexus.API.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("ProjectNexus.API.Models.User", b =>
-                {
-                    b.HasOne("ProjectNexus.API.Models.Reference", null)
-                        .WithMany("Authors")
-                        .HasForeignKey("ReferenceId");
-                });
-
             modelBuilder.Entity("ProjectNexus.API.Models.UserTask", b =>
                 {
                     b.HasOne("ProjectNexus.API.Models.Task", "Task")
@@ -376,11 +375,6 @@ namespace ProjectNexus.API.Migrations
                     b.Navigation("References");
 
                     b.Navigation("Tasks");
-                });
-
-            modelBuilder.Entity("ProjectNexus.API.Models.Reference", b =>
-                {
-                    b.Navigation("Authors");
                 });
 
             modelBuilder.Entity("ProjectNexus.API.Models.Task", b =>
