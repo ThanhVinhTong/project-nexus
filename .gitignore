@@ -37,9 +37,6 @@ obj/
 # ASP.NET scaffolding
 .scaffolding/
 
-# EF Core migrations snapshots
-Migrations/
-
 # =========================
 # OS / IDE
 # =========================
