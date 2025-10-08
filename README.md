@@ -2,20 +2,21 @@
 *A lightweight collaboration platform for research & project teams.*
 
 ## 📌 Overview
-Project Nexus is a **full-stack collaboration platform** designed to help teams manage projects, tasks, files, and research notes in one place.  
-Think of it as a **lightweight Notion/Trello for researchers** — with project management, document storage, and versioned notes.
+Project Nexus is a **full-stack collaboration platform** designed to help teams manage projects, tasks, activities, references, and research notes in one place.  
+Think of it as a **lightweight Notion/Trello for researchers** — with project management, user collaboration, activity tracking, and versioned notes.
 
-This project is built as a **1-day sprint by 2 developers**, with each person owning **end-to-end features** (frontend + backend).  
+This project features a **comprehensive backend API** with 8 controllers and 8 data models, supporting complex project workflows with user permissions, task assignments, and activity logging.  
 
 ---
 
 ## 🏗️ Tech Stack
-- **Frontend**: Next.js + TailwindCSS
-- **Backend**: ASP.NET Core Web API
-- **Database**: PostgreSQL + EF Core
-- **Storage**: Local uploads (can be extended to AWS S3/Azure Blob)
-- **Auth**: Mock login (JWT stub / Google OAuth placeholder)
-- **Deployment**: Docker (optional)
+- **Frontend**: Next.js + TailwindCSS + TypeScript
+- **Backend**: ASP.NET Core Web API (.NET 9)
+- **Database**: PostgreSQL + Entity Framework Core
+- **Authentication**: User management with roles and permissions
+- **API Documentation**: Swagger/OpenAPI
+- **CORS**: Configured for frontend-backend communication
+- **Deployment**: Docker (optional) + Supabase support
 
 ---
 
@@ -29,33 +30,35 @@ project-nexus/
 
 ---
 
-## 👥 Task Split (Vertical Features)
+## 🏗️ Architecture Overview
 
-### Person A → Projects + Tasks
-- **Backend**
-  - `Project` model + CRUD APIs
-  - `Task` model + APIs (`add/update status`)
-- **Frontend**
-  - Dashboard (list projects)
-  - Project detail page (tasks tab)
+### Backend Implementation
+- **8 Controllers**: Users, Projects, Tasks, Notes, Activities, References, ProjectUsers, UserTasks
+- **8 Data Models**: Complete entity relationships with timestamps
+- **Database**: PostgreSQL with Entity Framework Core migrations
+- **API**: RESTful endpoints with Swagger documentation
+- **Authentication**: User management with roles and permissions
 
-### Person B → Files + Notes
-- **Backend**
-  - `File` model + upload API (metadata + local storage)
-  - `Note` model + APIs (versioned notes)
-- **Frontend**
-  - File upload UI (list files per project)
-  - Notes editor (Markdown input + version history)
+### Frontend Implementation
+- **Next.js**: React-based frontend with TypeScript
+- **UI Components**: TailwindCSS for styling
+- **Pages**: Dashboard, projects, tasks, notes, and user management
+- **State Management**: Component-based state with API integration
 
 ---
 
 ## 🗄️ Database Schema
-**Tables**
-- **User** → id, name, email, role
-- **Project** → id, title, description, deadline
-- **Task** → id, projectId, title, status
-- **File** → id, projectId, filename, url
-- **Note** → id, projectId, content, version
+**Core Tables**
+- **User** → id, legalName, userName, email, hashedPassword, role, createdAt, updatedAt
+- **Project** → id, title, description, deadline, status, createdAt, updatedAt
+- **Task** → id, projectId, title, type, priority, dueDate, createdAt, updatedAt
+- **Note** → id, projectId, content, createdAt, updatedAt
+- **Activity** → id, projectId, message, createdAt, updatedAt
+- **Reference** → id, projectId, referenceName, url, description, authors, createdAt, updatedAt
+
+**Relationship Tables**
+- **ProjectUser** → id, projectId, userId, userPermission, createdAt, updatedAt
+- **UserTask** → taskId, userId, comment, createdAt, updatedAt
 
 ---
 
@@ -63,53 +66,74 @@ project-nexus/
 
 ### Backend (ASP.NET Core API)
 ```bash
-cd backend
-dotnet new webapi -n ProjectNexus.API
-# install EF Core + PostgreSQL
-dotnet add package Microsoft.EntityFrameworkCore
-dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
-dotnet add package Microsoft.EntityFrameworkCore.Design
+cd backend/ProjectNexus.API
+dotnet restore
+dotnet ef database update
+dotnet run
 ```
+- API runs on: http://localhost:5160
+- Swagger UI: http://localhost:5160/swagger
+- See [backend/README.md](backend/README.md) for detailed setup
 
 ### Frontend (Next.js + Tailwind)
-```
+```bash
 cd frontend
-npx create-next-app@latest .
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
+npm install
+npm run dev
 ```
-- Add Tailwind setup in globals.css
-- Start dev server: npm run dev
+- Frontend runs on: http://localhost:3000
+- Configured to connect to backend API
 
-## API Endpoints (Draft)
+## 📡 API Endpoints
 ```
-Auth
-    POST /login → mock login, return fake JWT
+Users
+    GET /api/users
+    POST /api/users
 Projects
-    GET /projects
-    POST /projects
-    GET /projects/{id}
+    GET /api/projects
+    POST /api/projects
+    GET /api/projects/{id}
 Tasks
-    POST /projects/{id}/tasks
-    PATCH /tasks/{id}
-Files
-    GET /projects/{id}/files
-    POST /projects/{id}/files
+    GET /api/tasks
+    POST /api/tasks
+    GET /api/tasks/{id}
+    PUT /api/tasks/{id}
 Notes
-    GET /projects/{id}/notes
-    POST /projects/{id}/notes
+    GET /api/notes
+    POST /api/notes
+    GET /api/notes/{id}
+Activities
+    GET /api/activities
+    POST /api/activities
+References
+    GET /api/references
+    POST /api/references
+Project Users
+    GET /api/projectusers
+    POST /api/projectusers
+User Tasks
+    GET /api/usertasks
+    POST /api/usertasks
 ```
 
-✅ Sprint Goal (1 Day)
-By the end of the day, we should be able to:
-- Login (mock)
-- Create projects
-- Add tasks to projects
-- Upload a file to a project
-- Write and version notes
+## ✅ Current Features
+**Implemented & Working:**
+- ✅ User management with roles and permissions
+- ✅ Project creation and management
+- ✅ Task management with assignments
+- ✅ Notes system with versioning
+- ✅ Activity logging and tracking
+- ✅ Reference management
+- ✅ User-project relationships
+- ✅ User-task assignments
+- ✅ Full REST API with Swagger documentation
+- ✅ Database migrations and seeding
 
-🚀 Future Extensions
-- Real OAuth login (Google/Microsoft)
-- Rich notifications (email + in-app)
-- PubMed/ORCID API integration
-- Deploy with Docker + AWS/GCP
+## 🚀 Future Extensions
+- **Authentication**: Real OAuth login (Google/Microsoft)
+- **File Management**: File upload and storage system
+- **Notifications**: Rich notifications (email + in-app)
+- **Research Integration**: PubMed/ORCID API integration
+- **Advanced Features**: Real-time collaboration, advanced permissions
+- **Deployment**: Docker + AWS/GCP deployment
+- **Mobile**: React Native mobile app
