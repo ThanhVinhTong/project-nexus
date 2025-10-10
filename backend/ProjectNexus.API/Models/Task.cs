@@ -2,7 +2,7 @@ namespace ProjectNexus.API.Models;
 
 public class Task
 {
-    public int Id { get; set; }
+    public int TaskId { get; set; }
     public int ProjectId { get; set; }
     public string Title { get; set; } = null!;
     public string? Type { get; set; }

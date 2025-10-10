@@ -35,7 +35,7 @@ public class TasksController : ControllerBase
         {
             var task = await _db.Tasks
                 .Include(t => t.UserTasks)
-                .FirstOrDefaultAsync(t => t.Id == id);
+                .FirstOrDefaultAsync(t => t.TaskId == id);
 
             if (task == null)
                 return NotFound($"Task with ID {id} not found");
@@ -79,7 +79,7 @@ public class TasksController : ControllerBase
             _db.Tasks.Add(task);
             await _db.SaveChangesAsync();
             
-            return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
+            return CreatedAtAction(nameof(GetTask), new { id = task.TaskId }, task);
         }
         catch (Exception ex)
         {
@@ -92,7 +92,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            if (id != task.Id)
+            if (id != task.TaskId)
                 return BadRequest("Task ID mismatch");
 
             if (!ModelState.IsValid)

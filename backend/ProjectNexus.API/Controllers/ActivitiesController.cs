@@ -71,7 +71,7 @@ public class ActivitiesController : ControllerBase
             _db.Activities.Add(activity);
             await _db.SaveChangesAsync();
             
-            return CreatedAtAction(nameof(GetActivity), new { id = activity.Id }, activity);
+            return CreatedAtAction(nameof(GetActivity), new { id = activity.ActivityId }, activity);
         }
         catch (Exception ex)
         {
@@ -84,7 +84,7 @@ public class ActivitiesController : ControllerBase
     {
         try
         {
-            if (id != activity.Id)
+            if (id != activity.ActivityId)
                 return BadRequest("Activity ID mismatch");
 
             if (!ModelState.IsValid)

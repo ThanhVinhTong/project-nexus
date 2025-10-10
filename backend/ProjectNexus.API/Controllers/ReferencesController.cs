@@ -71,7 +71,7 @@ public class ReferencesController : ControllerBase
             _db.References.Add(reference);
             await _db.SaveChangesAsync();
             
-            return CreatedAtAction(nameof(GetReference), new { id = reference.Id }, reference);
+            return CreatedAtAction(nameof(GetReference), new { id = reference.ReferenceId }, reference);
         }
         catch (Exception ex)
         {
@@ -84,7 +84,7 @@ public class ReferencesController : ControllerBase
     {
         try
         {
-            if (id != reference.Id)
+            if (id != reference.ReferenceId)
                 return BadRequest("Reference ID mismatch");
 
             if (!ModelState.IsValid)

@@ -38,7 +38,7 @@ public class UserController : ControllerBase
             var user = await _db.Users
                 .Include(u => u.ProjectUsers)
                 .Include(u => u.UserTasks)
-                .FirstOrDefaultAsync(u => u.Id == id);
+                .FirstOrDefaultAsync(u => u.UserId == id);
 
             if (user == null)
                 return NotFound($"User with ID {id} not found");
@@ -65,7 +65,7 @@ public class UserController : ControllerBase
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+            return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, user);
         }
         catch (Exception ex)
         {
@@ -78,7 +78,7 @@ public class UserController : ControllerBase
     {
         try
         {
-            if (id != updatedUser.Id)
+            if (id != updatedUser.UserId)
                 return BadRequest("ID mismatch");
 
             var user = await _db.Users.FindAsync(id);

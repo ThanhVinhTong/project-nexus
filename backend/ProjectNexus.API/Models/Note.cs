@@ -2,7 +2,7 @@ namespace ProjectNexus.API.Models;
 
 public class Note
 {
-    public int Id { get; set; }
+    public int NoteId { get; set; }
     public int ProjectId { get; set; }
     public string Content { get; set; } = null!;
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;

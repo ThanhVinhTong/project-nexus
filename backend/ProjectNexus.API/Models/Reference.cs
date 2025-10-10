@@ -4,7 +4,7 @@ namespace ProjectNexus.API.Models;
 
 public class Reference
 {
-    public int Id { get; set; }
+    public int ReferenceId { get; set; }
     public int ProjectId { get; set; }
     public string ReferenceName { get; set; } = null!;
     [Url]

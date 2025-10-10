@@ -39,7 +39,7 @@ public class ProjectsController : ControllerBase
                 .Include(p => p.Notes)
                 .Include(p => p.References)
                 .Include(p => p.Activities)
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => p.ProjectId == id);
 
             if (project == null)
                 return NotFound($"Project with ID {id} not found");
@@ -66,7 +66,7 @@ public class ProjectsController : ControllerBase
             _db.Projects.Add(project);
             await _db.SaveChangesAsync();
             
-            return CreatedAtAction(nameof(GetProject), new { id = project.Id }, project);
+            return CreatedAtAction(nameof(GetProject), new { id = project.ProjectId }, project);
         }
         catch (Exception ex)
         {
@@ -79,7 +79,7 @@ public class ProjectsController : ControllerBase
     {
         try
         {
-            if (id != project.Id)
+            if (id != project.ProjectId)
                 return BadRequest("Project ID mismatch");
 
             if (!ModelState.IsValid)

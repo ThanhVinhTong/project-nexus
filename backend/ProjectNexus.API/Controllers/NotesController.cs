@@ -71,7 +71,7 @@ public class NotesController : ControllerBase
             _db.Notes.Add(note);
             await _db.SaveChangesAsync();
             
-            return CreatedAtAction(nameof(GetNote), new { id = note.Id }, note);
+            return CreatedAtAction(nameof(GetNote), new { id = note.NoteId }, note);
         }
         catch (Exception ex)
         {
@@ -84,7 +84,7 @@ public class NotesController : ControllerBase
     {
         try
         {
-            if (id != note.Id)
+            if (id != note.NoteId)
                 return BadRequest("Note ID mismatch");
 
             if (!ModelState.IsValid)

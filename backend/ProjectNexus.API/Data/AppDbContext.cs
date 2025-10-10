@@ -15,12 +15,13 @@ public class AppDbContext : DbContext
     public DbSet<ProjectUser> ProjectUsers => Set<ProjectUser>();
     public DbSet<Activity> Activities => Set<Activity>();
     public DbSet<UserTask> UserTasks => Set<UserTask>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Configure ProjectUser: Use Id as PK, unique constraint on (ProjectId, UserId)
+        // Configure ProjectUser: Use ProjectUserId as PK, unique constraint on (ProjectId, UserId)
         modelBuilder.Entity<ProjectUser>()
-            .HasKey(pu => pu.Id);  // Matches model with explicit Id
+            .HasKey(pu => pu.ProjectUserId);  // Matches model with explicit ProjectUserId
 
         modelBuilder.Entity<ProjectUser>()
             .HasIndex(pu => new { pu.ProjectId, pu.UserId })
@@ -103,6 +104,29 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<UserTask>()
             .Property(ut => ut.Comment).IsRequired(false);
+
+        // Configure RefreshToken relationships
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(rt => rt.User)
+            .WithMany(u => u.RefreshTokens)
+            .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure indexes for performance and security
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.UserName)
+            .IsUnique();
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(rt => rt.Token)
+            .IsUnique();
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(rt => new { rt.UserId, rt.IsRevoked });
 
         base.OnModelCreating(modelBuilder);
     }

@@ -4,7 +4,7 @@ namespace ProjectNexus.API.Models;
 
 public class ProjectUser
 {
-    public int Id { get; set; }
+    public int ProjectUserId { get; set; }
     public int ProjectId { get; set; }
     public int UserId { get; set; }
     public string UserPermission { get; set; } = null!;

@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -10,7 +11,8 @@ import {
   PencilSquareIcon, 
   BellIcon, 
   UserIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import {
   HomeIcon as HomeIconSolid,
@@ -18,13 +20,67 @@ import {
   PencilSquareIcon as PencilSquareIconSolid,
   BellIcon as BellIconSolid,
 } from '@heroicons/react/24/solid';
+import { authService, User } from '@/lib/auth';
 
 export function MainNavigation() {
   const router = useRouter();
   const pathname = router.pathname;
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        if (authService.isAuthenticated()) {
+          const userProfile = await authService.getProfile();
+          setUser(userProfile);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showUserMenu) {
+        const target = event.target as Element;
+        const userMenuElement = document.querySelector('[data-user-menu]');
+        if (userMenuElement && !userMenuElement.contains(target)) {
+          setShowUserMenu(false);
+        }
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu]);
 
   const handleLogout = () => {
-    router.push('/login');
+    // Close the user menu immediately
+    setShowUserMenu(false);
+    
+    // Try the logout page first, but also provide a direct fallback
+    try {
+      router.push('/logout');
+    } catch (error) {
+      console.error('Router push failed, using direct redirect:', error);
+      // Fallback: direct redirect
+      window.location.href = '/login';
+    }
   };
 
   const navigation = [
@@ -45,6 +101,12 @@ export function MainNavigation() {
       href: '/schedule', 
       icon: DocumentTextIcon,
       activeIcon: DocumentTextIconSolid
+    },
+    { 
+      name: 'Account', 
+      href: '/account', 
+      icon: UserIcon,
+      activeIcon: UserIcon
     },
     { 
       name: 'Notifications', 
@@ -92,12 +154,81 @@ export function MainNavigation() {
           </div>
           
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
-              <UserIcon className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <ArrowRightOnRectangleIcon className="h-5 w-5" />
-            </Button>
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            ) : user ? (
+              <div className="relative" data-user-menu>
+                {/* Integrated User Menu Button */}
+                <button 
+                  className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowUserMenu(!showUserMenu);
+                  }}
+                >
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {user.legalName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="hidden md:block text-left">
+                    <div className="text-sm font-medium text-gray-900">{user.legalName}</div>
+                    <div className="text-xs text-gray-500">{user.role}</div>
+                  </div>
+                  <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {/* Dropdown Menu */}
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
+                    {/* User Info Header */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">
+                            {user.legalName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-gray-900">{user.legalName}</div>
+                          <div className="text-xs text-gray-500">{user.email}</div>
+                          <div className="text-xs text-blue-600 font-medium">{user.role}</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Menu Items */}
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          router.push('/account');
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <UserIcon className="h-4 w-4 mr-3" />
+                        Account Details
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors"
+                      >
+                        <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Button variant="ghost" size="sm" onClick={() => router.push('/login')}>
+                <UserIcon className="h-5 w-5" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
