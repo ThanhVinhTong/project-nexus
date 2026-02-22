@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Project Nexus</title>
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      // https://github.com/rafgraph/spa-github-pages
+      // This script checks to see if a redirect is present in the query string
+      // and converts it back into a single-page app route.
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, l.pathname.lastIndexOf('/')) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
+    <script type="text/javascript">
+      // If there is no search string but the path is not root, 
+      // GH Pages served this 404 because the deep link doesn't exist.
+      // We can redirect to the home page or try to handle it.
+      // In a static export with trailingSlash: true, this 404 is less common
+      // but still useful as a fallback.
+      if (window.location.pathname !== '/' && !window.location.search) {
+        window.location.href = '/?redirect=' + encodeURIComponent(window.location.pathname);
+      }
+    </script>
+  </head>
+  <body>
+    Redirecting...
+  </body>
+</html>
