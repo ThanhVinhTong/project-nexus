@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { UserIcon, EnvelopeIcon, CalendarIcon, ShieldCheckIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { authService, User } from "@/lib/auth";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -61,8 +60,7 @@ export default function AccountPage() {
   }
 
   return (
-    <ProtectedRoute>
-      <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <Button 
           variant="ghost" 
@@ -119,17 +117,6 @@ export default function AccountPage() {
                   disabled
                   className="mt-1"
                 />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Badge variant={user.isEmailVerified ? "default" : "secondary"}>
-                  {user.isEmailVerified ? "Verified" : "Unverified"}
-                </Badge>
-                {!user.isEmailVerified && (
-                  <Button variant="outline" size="sm">
-                    Verify Email
-                  </Button>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -200,7 +187,6 @@ export default function AccountPage() {
           Edit Profile
         </Button>
       </div>
-      </div>
-    </ProtectedRoute>
+    </div>
   );
 }

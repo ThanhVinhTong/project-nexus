@@ -1,104 +1,25 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MagnifyingGlassIcon, FunnelIcon, ArrowUpTrayIcon, ArrowDownTrayIcon, EyeIcon, DocumentTextIcon, DocumentIcon, FolderIcon } from "@heroicons/react/24/outline";
+import { authService } from "@/lib/auth";
 
-const mockFiles = [
-  {
-    id: "1",
-    name: "Ethics Framework v2.pdf",
-    type: "PDF",
-    size: "2.4 MB",
-    modified: "2 days ago",
-    author: "Dr. Sarah Chen",
-    tags: ["ethics", "framework", "healthcare"],
-    category: "research"
-  },
-  {
-    id: "2",
-    name: "Data Analysis Report.docx",
-    type: "DOC",
-    size: "1.8 MB", 
-    modified: "1 week ago",
-    author: "Alex Rivera",
-    tags: ["data", "analysis", "statistics"],
-    category: "analysis"
-  },
-  {
-    id: "3",
-    name: "Literature Review - AI Bias.pdf",
-    type: "PDF",
-    size: "3.2 MB",
-    modified: "3 days ago", 
-    author: "Emily Johnson",
-    tags: ["literature", "bias", "ai"],
-    category: "research"
-  },
-  {
-    id: "4",
-    name: "Interview Transcripts",
-    type: "FOLDER",
-    size: "15 files",
-    modified: "1 day ago",
-    author: "Emily Johnson", 
-    tags: ["interviews", "transcripts", "qualitative"],
-    category: "data"
-  },
-  {
-    id: "5",
-    name: "Survey Responses.xlsx",
-    type: "EXCEL",
-    size: "890 KB",
-    modified: "5 days ago",
-    author: "Michael Kim",
-    tags: ["survey", "responses", "data"],
-    category: "data"
-  },
-  {
-    id: "6",
-    name: "Research Proposal Final.pdf",
-    type: "PDF",
-    size: "4.1 MB",
-    modified: "2 weeks ago",
-    author: "Dr. Sarah Chen",
-    tags: ["proposal", "research", "final"],
-    category: "documentation"
-  }
-];
-
-const mockPapers = [
-  {
-    id: "1",
-    title: "Ethical Considerations in Healthcare AI: A Systematic Review",
-    authors: "Johnson, E., Smith, R., Chen, L.",
-    journal: "Journal of Medical Ethics",
-    year: "2024",
-    citations: 42,
-    tags: ["ethics", "healthcare", "ai", "systematic-review"]
-  },
-  {
-    id: "2", 
-    title: "Algorithmic Bias in Clinical Decision Support Systems",
-    authors: "Rivera, A., Brown, M., Davis, K.",
-    journal: "Nature Medicine",
-    year: "2023",
-    citations: 156,
-    tags: ["bias", "clinical", "algorithms", "decision-support"]
-  },
-  {
-    id: "3",
-    title: "Patient Privacy in AI-Driven Healthcare: Current Challenges",
-    authors: "Kim, M., Thompson, S., Wilson, J.",
-    journal: "Health Affairs",
-    year: "2024",
-    citations: 23,
-    tags: ["privacy", "ai", "healthcare", "challenges"]
-  }
-];
+// Interface for reference data from backend
+interface Reference {
+  referenceId: number;
+  projectId: number;
+  referenceName: string;
+  url: string | null;
+  description: string | null;
+  authors: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const getFileIcon = (type: string) => {
   switch (type) {
@@ -109,6 +30,91 @@ const getFileIcon = (type: string) => {
 };
 
 export default function DocumentsPage() {
+  const [references, setReferences] = useState<Reference[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const fetchReferences = async () => {
+      const sampleReferences = [
+        {
+          referenceId: 1,
+          projectId: 1,
+          referenceName: "OWASP Top 10 API Security Risks",
+          url: "https://owasp.org/www-project-api-security/",
+          description: "Critical security risks for modern web applications and APIs.",
+          authors: "OWASP Foundation",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          referenceId: 2,
+          projectId: 2,
+          referenceName: "The State of AI Research 2026",
+          url: "https://example.com/ai-report",
+          description: "Comprehensive annual report on global artificial intelligence trends and breakthroughs.",
+          authors: "Global Research Institute",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          referenceId: 3,
+          projectId: 1,
+          referenceName: "Microservices Architecture Patterns",
+          url: "https://example.com/ms-patterns",
+          description: "A deep dive into distributed systems and service-oriented architectures.",
+          authors: "Chris Richardson",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+
+      const setSampleData = () => {
+        setReferences(sampleReferences);
+      };
+
+      try {
+        if (authService.isAuthenticated()) {
+          try {
+            let referencesData = await authService.makeAuthenticatedRequest<Reference[]>('/api/references');
+            if (Array.isArray(referencesData) && referencesData.length > 0) {
+              setReferences(referencesData);
+            } else {
+              setSampleData();
+            }
+          } catch (e) {
+            console.warn('API call failed, using sample reference data:', e);
+            setSampleData();
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch references:', error);
+        setSampleData();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReferences();
+  }, []);
+
+  const filteredReferences = references.filter(reference =>
+    reference.referenceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (reference.description && reference.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (reference.authors && reference.authors.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-blue-600 rounded-full animate-pulse mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading references...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Header */}
@@ -133,103 +139,88 @@ export default function DocumentsPage() {
       <div className="mb-6">
         <div className="relative max-w-2xl">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <Input 
-            placeholder="Search files, papers, and documents..." 
+          <Input
+            placeholder="Search references and documents..."
             className="pl-12 py-3"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      <Tabs defaultValue="files" className="w-full">
+      <Tabs defaultValue="references" className="w-full">
         <TabsList>
-          <TabsTrigger value="files">Project Files</TabsTrigger>
-          <TabsTrigger value="papers">Research Papers</TabsTrigger>
-          <TabsTrigger value="shared">Shared with Me</TabsTrigger>
+          <TabsTrigger value="references">Research References</TabsTrigger>
+          <TabsTrigger value="all">All Documents</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="files" className="mt-6">
+
+        <TabsContent value="references" className="mt-6">
           <div className="space-y-4">
-            {mockFiles.map((file) => (
-              <Card key={file.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      {getFileIcon(file.type)}
-                      <div>
-                        <h4 className="font-medium">{file.name}</h4>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600">
-                          <span>{file.type} • {file.size}</span>
-                          <span>Modified {file.modified}</span>
-                          <span>by {file.author}</span>
-                        </div>
-                        <div className="flex gap-1 mt-2">
-                          {file.tags.map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
+            {filteredReferences.length > 0 ? (
+              filteredReferences.map((reference) => (
+                <Card key={reference.referenceId} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-4">
+                        <DocumentTextIcon className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-blue-600 cursor-pointer hover:underline">
+                            {reference.referenceName}
+                          </h4>
+                          {reference.authors && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              Authors: {reference.authors}
+                            </p>
+                          )}
+                          {reference.description && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              {reference.description}
+                            </p>
+                          )}
+                          <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                            <span>Project #{reference.projectId}</span>
+                            <span>Added {new Date(reference.createdAt).toLocaleDateString()}</span>
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        {reference.url && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => window.open(reference.url!, '_blank')}
+                            title="Open URL"
+                          >
+                            <EyeIcon className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="icon" title="Download">
+                          <ArrowDownTrayIcon className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="icon">
-                        <EyeIcon className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <ArrowDownTrayIcon className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <DocumentTextIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-600 mb-2">
+                  {searchTerm ? 'No references found' : 'No references available'}
+                </h3>
+                <p className="text-gray-500">
+                  {searchTerm ? 'Try adjusting your search terms.' : 'References will appear here when added to projects.'}
+                </p>
+              </div>
+            )}
           </div>
         </TabsContent>
-        
-        <TabsContent value="papers" className="mt-6">
-          <div className="space-y-4">
-            {mockPapers.map((paper) => (
-              <Card key={paper.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-blue-600 cursor-pointer hover:underline">
-                        {paper.title}
-                      </h4>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {paper.authors} • {paper.journal} ({paper.year})
-                      </p>
-                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                        <span>{paper.citations} citations</span>
-                      </div>
-                      <div className="flex gap-1 mt-3">
-                        {paper.tags.map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="icon">
-                        <EyeIcon className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <ArrowDownTrayIcon className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="shared" className="mt-6">
+
+        <TabsContent value="all" className="mt-6">
           <div className="text-center py-12">
             <DocumentTextIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-600 mb-2">No shared files</h3>
-            <p className="text-gray-500">Files shared with you will appear here</p>
+            <h3 className="text-lg font-medium text-gray-600 mb-2">All Documents</h3>
+            <p className="text-gray-500">This section will show all project documents and files</p>
           </div>
         </TabsContent>
       </Tabs>

@@ -9,6 +9,10 @@ using ProjectNexus.API.Models;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using Microsoft.Extensions.Options;
+using System.Text.Encodings.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,37 +36,54 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)),
-            ClockSkew = TimeSpan.Zero // Remove default 5-minute clock skew
-        };
+// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//     .AddJwtBearer(options =>
+//     {
+//         options.TokenValidationParameters = new TokenValidationParameters
+//         {
+//             ValidateIssuer = true,
+//             ValidateAudience = true,
+//             ValidateLifetime = true,
+//             ValidateIssuerSigningKey = true,
+//             ValidIssuer = jwtSettings["Issuer"],
+//             ValidAudience = jwtSettings["Audience"],
+//             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)),
+//             ClockSkew = TimeSpan.Zero // Remove default 5-minute clock skew
+//         };
 
-        // Handle token validation events
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
-                {
-                    context.Response.Headers.Append("Token-Expired", "true");
-                }
-                return System.Threading.Tasks.Task.CompletedTask;
-            }
-        };
-    });
+//         // Handle token validation events
+//         options.Events = new JwtBearerEvents
+//         {
+//             OnAuthenticationFailed = context =>
+//             {
+//                 if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+//                 {
+//                     context.Response.Headers.Append("Token-Expired", "true");
+//                 }
+//                 return System.Threading.Tasks.Task.CompletedTask;
+//             }
+//         };
+//     });
 
-// Add Authorization
-builder.Services.AddAuthorization();
+// Temporary Mock Authentication for Demo
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = "DemoAuth";
+    options.DefaultChallengeScheme = "DemoAuth";
+    options.DefaultScheme = "DemoAuth";
+})
+.AddScheme<AuthenticationSchemeOptions, DemoAuthHandler>("DemoAuth", null);
+
+
+// Add Authorization (Bypassed for demo)
+builder.Services.AddAuthorization(options =>
+{
+    var bypassPolicy = new AuthorizationPolicyBuilder()
+        .RequireAssertion(_ => true)
+        .Build();
+    options.DefaultPolicy = bypassPolicy;
+    options.FallbackPolicy = bypassPolicy;
+});
 
 // Add Password Hasher
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
@@ -163,7 +184,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Enable Rate Limiting
-app.UseRateLimiter();
+// app.UseRateLimiter();
 
 // Enable CORS
 app.UseCors("AllowFrontend");
@@ -176,3 +197,24 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public class DemoAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+{
+    public DemoAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        : base(options, logger, encoder, clock) { }
+
+    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    {
+        var claims = new[] { 
+            new Claim(ClaimTypes.NameIdentifier, "1"), 
+            new Claim(ClaimTypes.Name, "Demo User"),
+            new Claim(ClaimTypes.Email, "demo@example.com"),
+            new Claim(ClaimTypes.Role, "Admin")
+        };
+        var identity = new ClaimsIdentity(claims, "DemoAuth");
+        var principal = new ClaimsPrincipal(identity);
+        var ticket = new AuthenticationTicket(principal, "DemoAuth");
+
+        return Task.FromResult(AuthenticateResult.Success(ticket));
+    }
+}

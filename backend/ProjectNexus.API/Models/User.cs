@@ -32,12 +32,6 @@ public class User
     
     public DateTime? LastLoginAt { get; set; }
     
-    public bool IsEmailVerified { get; set; } = false;
-    
-    public string? EmailVerificationToken { get; set; }
-    
-    public DateTime? EmailVerificationTokenExpires { get; set; }
-    
     public bool IsActive { get; set; } = true;
     
     // Navigation properties

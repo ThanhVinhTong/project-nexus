@@ -37,8 +37,7 @@ namespace ProjectNexus.API.Services
                 new(ClaimTypes.Name, user.UserName),
                 new(ClaimTypes.Email, user.Email),
                 new(ClaimTypes.Role, user.Role),
-                new("legalName", user.LegalName),
-                new("isEmailVerified", user.IsEmailVerified.ToString())
+                new("legalName", user.LegalName)
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

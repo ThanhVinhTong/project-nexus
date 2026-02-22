@@ -15,6 +15,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // Temporarily bypass for demo
+      setIsAuthenticated(true);
+      setIsLoading(false);
+      /*
       try {
         const authenticated = authService.isAuthenticated();
         setIsAuthenticated(authenticated);
@@ -30,6 +34,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       } finally {
         setIsLoading(false);
       }
+      */
     };
 
     checkAuth();

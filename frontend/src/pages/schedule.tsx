@@ -1,190 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon, ClockIcon, UserIcon, FlagIcon } from '@heroicons/react/24/outline';
 import { ArrowLeftIcon } from '@heroicons/react/24/solid';
+import { authService } from '@/lib/auth';
 
-// Mock data for tasks
-const mockTasks = [
-  // October 8, 2025 (Today)
-  {
-    id: "1",
-    title: "Ethics Committee Meeting",
-    description: "Present findings to ethics review board",
-    status: "done",
-    assignee: "Dr. Sarah Chen",
-    priority: "high",
-    dueDate: "2025-10-08",
-    dueTime: "09:00",
-    projectId: "1"
-  },
-  {
-    id: "2",
-    title: "Team Sync Meeting",
-    description: "Weekly project status update",
-    status: "in-progress",
-    assignee: "All Team",
-    priority: "medium",
-    dueDate: "2025-10-08",
-    dueTime: "11:00",
-    projectId: "1"
-  },
-  {
-    id: "3",
-    title: "Literature Review",
-    description: "Review existing research on AI ethics frameworks",
-    status: "todo",
-    assignee: "Maya Patel",
-    priority: "high",
-    dueDate: "2025-10-08",
-    dueTime: "14:00",
-    projectId: "1"
-  },
-  {
-    id: "4",
-    title: "Statistical Analysis",
-    description: "Run regression models on collected data",
-    status: "todo",
-    assignee: "Lisa Wong",
-    priority: "high",
-    dueDate: "2025-10-08",
-    dueTime: "16:30",
-    projectId: "2"
-  },
-  // October 9, 2025
-  {
-    id: "5",
-    title: "Data Collection",
-    description: "Gather climate data from weather stations",
-    status: "todo",
-    assignee: "David Kim",
-    priority: "medium",
-    dueDate: "2025-10-09",
-    dueTime: "10:30",
-    projectId: "2"
-  },
-  {
-    id: "6",
-    title: "Data Validation",
-    description: "Verify accuracy of climate measurements",
-    status: "in-progress",
-    assignee: "Prof. Michael Green",
-    priority: "high",
-    dueDate: "2025-10-09",
-    dueTime: "13:00",
-    projectId: "2"
-  },
-  {
-    id: "7",
-    title: "Research Paper Outline",
-    description: "Draft outline for publication",
-    status: "todo",
-    assignee: "Dr. Sarah Chen",
-    priority: "medium",
-    dueDate: "2025-10-09",
-    dueTime: "15:30",
-    projectId: "1"
-  },
-  // October 10, 2025
-  {
-    id: "8",
-    title: "Algorithm Design Review",
-    description: "Review quantum algorithm specifications",
-    status: "done",
-    assignee: "Dr. Emily Watson",
-    priority: "high",
-    dueDate: "2025-10-10",
-    dueTime: "10:00",
-    projectId: "3"
-  },
-  {
-    id: "9",
-    title: "Grant Proposal Draft",
-    description: "Complete first draft of NSF grant proposal",
-    status: "in-progress",
-    assignee: "Alex Rodriguez",
-    priority: "high",
-    dueDate: "2025-10-10",
-    dueTime: "14:00",
-    projectId: "1"
-  },
-  // October 11, 2025
-  {
-    id: "10",
-    title: "Code Review Session",
-    description: "Review implementation of data processing pipeline",
-    status: "todo",
-    assignee: "James Liu",
-    priority: "medium",
-    dueDate: "2025-10-11",
-    dueTime: "11:00",
-    projectId: "3"
-  },
-  // October 12, 2025
-  {
-    id: "11",
-    title: "Workshop Preparation",
-    description: "Prepare materials for AI ethics workshop",
-    status: "todo",
-    assignee: "Maya Patel",
-    priority: "high",
-    dueDate: "2025-10-12",
-    dueTime: "09:00",
-    projectId: "1"
-  },
-  {
-    id: "12",
-    title: "Climate Model Testing",
-    description: "Run validation tests on climate prediction model",
-    status: "todo",
-    assignee: "Lisa Wong",
-    priority: "medium",
-    dueDate: "2025-10-12",
-    dueTime: "13:30",
-    projectId: "2"
-  },
-  // October 15, 2025
-  {
-    id: "13",
-    title: "Algorithm Implementation",
-    description: "Implement quantum optimization algorithm",
-    status: "in-progress",
-    assignee: "James Liu",
-    priority: "high",
-    dueDate: "2025-10-15",
-    dueTime: "10:00",
-    projectId: "3"
-  },
-  {
-    id: "14",
-    title: "Stakeholder Meeting",
-    description: "Present project updates to stakeholders",
-    status: "todo",
-    assignee: "All Team",
-    priority: "high",
-    dueDate: "2025-10-15",
-    dueTime: "15:00",
-    projectId: "2"
-  },
-  // October 20, 2025
-  {
-    id: "15",
-    title: "Final Report Review",
-    description: "Review and finalize quarterly progress report",
-    status: "todo",
-    assignee: "Dr. Sarah Chen",
-    priority: "high",
-    dueDate: "2025-10-20",
-    dueTime: "11:00",
-    projectId: "1"
-  }
-];
+// Interface for task data from backend
+interface Task {
+  taskId: number;
+  projectId: number;
+  title: string;
+  type: string | null;
+  priority: string | null;
+  dueDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
-// Project titles mapping
-const projectTitles: { [key: string]: string } = {
-  "1": "AI Ethics Research",
-  "2": "Climate Change Analysis", 
-  "3": "Quantum Computing Study"
-};
+// Interface for project data
+interface Project {
+  projectId: number;
+  title: string;
+}
 
 interface ScheduleProps {
   onBack: () => void;
@@ -192,6 +28,91 @@ interface ScheduleProps {
 
 export function Schedule({ onBack }: ScheduleProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const sampleTasks = [
+        {
+          taskId: 1,
+          projectId: 1,
+          title: "Core API Review",
+          type: "Review",
+          priority: "high",
+          dueDate: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          taskId: 2,
+          projectId: 2,
+          title: "Model Training Session",
+          type: "Implementation",
+          priority: "medium",
+          dueDate: new Date(new Date().getTime() + 2 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          taskId: 3,
+          projectId: 3,
+          title: "UI Component Library Audit",
+          type: "Design",
+          priority: "low",
+          dueDate: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+
+      const sampleProjects = [
+        { projectId: 1, title: "Nexus Core Platform" },
+        { projectId: 2, title: "AI Research Initiative" },
+        { projectId: 3, title: "Website Revamp" }
+      ];
+
+      const setSampleData = () => {
+        setTasks(sampleTasks);
+        setProjects(sampleProjects);
+      };
+
+      try {
+        if (authService.isAuthenticated()) {
+          try {
+            // Fetch tasks and projects in parallel
+            let [tasksData, projectsData] = await Promise.all([
+              authService.makeAuthenticatedRequest<Task[]>('/api/tasks'),
+              authService.makeAuthenticatedRequest<Project[]>('/api/projects')
+            ]);
+
+            if (Array.isArray(tasksData) && tasksData.length > 0) {
+              setTasks(tasksData);
+            } else {
+              setTasks(sampleTasks);
+            }
+
+            if (Array.isArray(projectsData) && projectsData.length > 0) {
+              setProjects(projectsData);
+            } else {
+              setProjects(sampleProjects);
+            }
+          } catch (e) {
+            console.warn('API call failed, using sample schedule data:', e);
+            setSampleData();
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+        setSampleData();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Format date to YYYY-MM-DD for comparison
   const formatDateToString = (date: Date): string => {
@@ -203,31 +124,41 @@ export function Schedule({ onBack }: ScheduleProps) {
 
   // Get tasks for the selected date
   const selectedDateString = formatDateToString(selectedDate);
-  const tasksForDate = mockTasks.filter(task => task.dueDate === selectedDateString);
-  
-  // Sort tasks by time
-  const sortedTasks = [...tasksForDate].sort((a, b) => {
-    const timeA = a.dueTime || '00:00';
-    const timeB = b.dueTime || '00:00';
-    return timeA.localeCompare(timeB);
+  const tasksForDate = tasks.filter(task => {
+    if (!task.dueDate) return false;
+    const taskDate = new Date(task.dueDate).toISOString().split('T')[0];
+    return taskDate === selectedDateString;
   });
 
+  // Sort tasks by due date time
+  const sortedTasks = [...tasksForDate].sort((a, b) => {
+    if (!a.dueDate || !b.dueDate) return 0;
+    return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+  });
+
+  // Get project title by ID
+  const getProjectTitle = (projectId: number): string => {
+    const project = projects.find(p => p.projectId === projectId);
+    return project ? project.title : `Project #${projectId}`;
+  };
+
   // Format time to 12-hour format
-  const formatTime = (time24: string): string => {
-    const [hours, minutes] = time24.split(':');
-    const hour = parseInt(hours);
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${hour12}:${minutes} ${period}`;
+  const formatTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
   };
 
   // Format selected date for display
   const formatDisplayDate = (date: Date): string => {
-    const options: Intl.DateTimeFormatOptions = { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     };
     return date.toLocaleDateString('en-US', options);
   };
@@ -273,16 +204,16 @@ export function Schedule({ onBack }: ScheduleProps) {
     return slots;
   };
 
-  const timeSlots = generateTimeSlots();
-
-  // Get tasks for a specific hour
-  const getTasksForHour = (hour: number) => {
-    return sortedTasks.filter(task => {
-      if (!task.dueTime) return false;
-      const taskHour = parseInt(task.dueTime.split(':')[0]);
-      return taskHour === hour;
-    });
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-blue-600 rounded-full animate-pulse mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading schedule...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -320,14 +251,14 @@ export function Schedule({ onBack }: ScheduleProps) {
             onSelect={(date) => date && setSelectedDate(date)}
             className="rounded-md border"
           />
-          
+
           {/* Quick Stats */}
           <div className="mt-6 space-y-3">
             <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
               <div className="flex items-center justify-between">
-                <span className="text-orange-900">Unfinished Tasks</span>
+                <span className="text-orange-900">Tasks Today</span>
                 <span className="text-orange-600">
-                  {tasksForDate.filter(t => t.status !== 'done').length}
+                  {tasksForDate.length}
                 </span>
               </div>
             </div>
@@ -358,8 +289,8 @@ export function Schedule({ onBack }: ScheduleProps) {
               <div className="space-y-3">
                 {sortedTasks.map((task) => (
                   <div
-                    key={task.id}
-                    className={`bg-white rounded-lg border-2 p-5 hover:shadow-md transition-shadow ${getStatusColor(task.status)}`}
+                    key={task.taskId}
+                    className="bg-white rounded-lg border-2 p-5 hover:shadow-md transition-shadow border-gray-200"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -368,7 +299,7 @@ export function Schedule({ onBack }: ScheduleProps) {
                           <div className="flex items-center space-x-2 min-w-[100px]">
                             <ClockIcon className="w-5 h-5 text-gray-500" />
                             <span className="text-gray-900">
-                              {task.dueTime ? formatTime(task.dueTime) : 'No time'}
+                              {task.dueDate ? formatTime(task.dueDate) : 'No time'}
                             </span>
                           </div>
 
@@ -377,39 +308,35 @@ export function Schedule({ onBack }: ScheduleProps) {
                             <div className="flex items-start justify-between">
                               <div>
                                 <h4 className="text-gray-900 mb-1">{task.title}</h4>
-                                <p className="text-gray-600 mb-3">{task.description}</p>
-                                
+
                                 {/* Meta Information */}
                                 <div className="flex flex-wrap items-center gap-4">
                                   {/* Project */}
                                   <div className="flex items-center space-x-2">
                                     <div className="w-2 h-2 rounded-full bg-blue-600"></div>
                                     <span className="text-gray-700">
-                                      {projectTitles[task.projectId] || 'Unknown Project'}
+                                      {getProjectTitle(task.projectId)}
                                     </span>
                                   </div>
 
-                                  {/* Assignee */}
-                                  <div className="flex items-center space-x-2 text-gray-600">
-                                    <UserIcon className="w-4 h-4" />
-                                    <span>{task.assignee}</span>
-                                  </div>
+                                  {/* Type */}
+                                  {task.type && (
+                                    <div className="flex items-center space-x-2 text-gray-600">
+                                      <span className="text-sm">{task.type}</span>
+                                    </div>
+                                  )}
 
                                   {/* Priority */}
-                                  <div className="flex items-center space-x-2">
-                                    <FlagIcon className="w-4 h-4" />
-                                    <span
-                                      className={`px-2 py-0.5 rounded border text-xs ${getPriorityColor(task.priority)}`}
-                                    >
-                                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                                    </span>
-                                  </div>
-
-                                  {/* Status */}
-                                  <div className="px-2 py-0.5 bg-white rounded border border-gray-300 text-xs text-gray-700">
-                                    {task.status === 'in-progress' ? 'In Progress' : 
-                                     task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-                                  </div>
+                                  {task.priority && (
+                                    <div className="flex items-center space-x-2">
+                                      <FlagIcon className="w-4 h-4" />
+                                      <span
+                                        className={`px-2 py-0.5 rounded border text-xs ${getPriorityColor(task.priority)}`}
+                                      >
+                                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>

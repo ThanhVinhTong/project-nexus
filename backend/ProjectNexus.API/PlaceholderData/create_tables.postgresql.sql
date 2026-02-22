@@ -81,9 +81,6 @@ CREATE TABLE IF NOT EXISTS "Users" (
   "CreatedAt" timestamptz NULL DEFAULT (now() AT TIME ZONE 'utc'),
   "UpdatedAt" timestamptz NULL DEFAULT (now() AT TIME ZONE 'utc'),
   "LastLoginAt" timestamptz NULL,
-  "IsEmailVerified" boolean NOT NULL DEFAULT false,
-  "EmailVerificationToken" text NULL,
-  "EmailVerificationTokenExpires" timestamptz NULL,
   "IsActive" boolean NOT NULL DEFAULT true
 );
 

@@ -14,23 +14,27 @@ namespace ProjectNexus.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [AllowAnonymous]
     public class AuthenticationController : ControllerBase
     {
         private readonly AppDbContext _context;
         private readonly IJwtService _jwtService;
         private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly IHostEnvironment _env;
         private readonly ILogger<AuthenticationController> _logger;
 
         public AuthenticationController(
             AppDbContext context,
             IJwtService jwtService,
             IPasswordHasher<User> passwordHasher,
-            ILogger<AuthenticationController> logger)
+            ILogger<AuthenticationController> logger,
+            IHostEnvironment env)
         {
             _context = context;
             _jwtService = jwtService;
             _passwordHasher = passwordHasher;
             _logger = logger;
+            _env = env;
         }
 
         [HttpPost("register")]
@@ -50,7 +54,6 @@ namespace ProjectNexus.API.Controllers
                 }
 
                 // Create new user
-                var verificationToken = Guid.NewGuid().ToString();
                 var user = new User
                 {
                     LegalName = registerDto.LegalName,
@@ -58,9 +61,6 @@ namespace ProjectNexus.API.Controllers
                     Email = registerDto.Email.ToLowerInvariant(),
                     Role = "User", // Default role
                     IsActive = true,
-                    IsEmailVerified = false,
-                    EmailVerificationToken = verificationToken,
-                    EmailVerificationTokenExpires = DateTime.UtcNow.AddHours(24), // 24 hours expiry
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -89,11 +89,6 @@ namespace ProjectNexus.API.Controllers
                 // Set HTTP-only cookie for refresh token
                 SetRefreshTokenCookie(refreshToken);
 
-                // TODO: Send verification email here
-                // For now, we'll just log it
-                _logger.LogInformation("User {Email} registered successfully. Verification token: {Token}", 
-                    user.Email, verificationToken);
-
                 _logger.LogInformation("User {Email} registered successfully", user.Email);
 
                 return Ok(new AuthResponseDto
@@ -108,8 +103,7 @@ namespace ProjectNexus.API.Controllers
                         UserName = user.UserName,
                         Email = user.Email,
                         Role = user.Role,
-                        CreatedAt = user.CreatedAt,
-                        IsEmailVerified = user.IsEmailVerified
+                        CreatedAt = user.CreatedAt
                     }
                 });
             }
@@ -194,8 +188,7 @@ namespace ProjectNexus.API.Controllers
                         Email = user.Email,
                         Role = user.Role,
                         CreatedAt = user.CreatedAt,
-                        LastLoginAt = user.LastLoginAt,
-                        IsEmailVerified = user.IsEmailVerified
+                        LastLoginAt = user.LastLoginAt
                     }
                 });
             }
@@ -207,20 +200,32 @@ namespace ProjectNexus.API.Controllers
         }
 
         [HttpPost("refresh")]
-        public async Task<ActionResult<AuthResponseDto>> RefreshToken(RefreshTokenDto refreshTokenDto)
+        public async Task<ActionResult<AuthResponseDto>> RefreshToken([FromBody] RefreshTokenDto? refreshTokenDto)
         {
             try
             {
-                var refreshToken = refreshTokenDto.RefreshToken;
+                // Prefer body value; if missing, fall back to HttpOnly cookie
+                var refreshToken = refreshTokenDto?.RefreshToken;
+                if (string.IsNullOrWhiteSpace(refreshToken))
+                {
+                    Request.Cookies.TryGetValue("refreshToken", out refreshToken);
+                }
+
+                if (string.IsNullOrWhiteSpace(refreshToken))
+                {
+                    return BadRequest(new { message = "Refresh token is required" });
+                }
 
                 // Find refresh token in database
                 var storedToken = await _context.RefreshTokens
                     .Include(rt => rt.User)
                     .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
 
+                _logger.LogInformation("storedToken hehehe: {@StoredToken}", storedToken.Token);
+
                 if (storedToken == null || storedToken.IsRevoked || storedToken.ExpiresAt < DateTime.UtcNow)
                 {
-                    return Unauthorized(new { message = "Invalid refresh token" });
+                    return Unauthorized(new { message = "Invalid refresh token hehehehehe" });
                 }
 
                 // Generate new tokens
@@ -260,8 +265,7 @@ namespace ProjectNexus.API.Controllers
                         Email = storedToken.User.Email,
                         Role = storedToken.User.Role,
                         CreatedAt = storedToken.User.CreatedAt,
-                        LastLoginAt = storedToken.User.LastLoginAt,
-                        IsEmailVerified = storedToken.User.IsEmailVerified
+                        LastLoginAt = storedToken.User.LastLoginAt
                     }
                 });
             }
@@ -273,7 +277,7 @@ namespace ProjectNexus.API.Controllers
         }
 
         [HttpPost("logout")]
-        [Authorize]
+        // [Authorize]
         public async Task<IActionResult> Logout()
         {
             try
@@ -310,7 +314,7 @@ namespace ProjectNexus.API.Controllers
         }
 
         [HttpGet("profile")]
-        [Authorize]
+        // [Authorize]
         public async Task<ActionResult<UserDto>> GetProfile()
         {
             try
@@ -331,8 +335,7 @@ namespace ProjectNexus.API.Controllers
                     Email = user.Email,
                     Role = user.Role,
                     CreatedAt = user.CreatedAt,
-                    LastLoginAt = user.LastLoginAt,
-                    IsEmailVerified = user.IsEmailVerified
+                    LastLoginAt = user.LastLoginAt
                 });
             }
             catch (Exception ex)
@@ -343,105 +346,27 @@ namespace ProjectNexus.API.Controllers
         }
 
         [HttpGet("admin-only")]
-        [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
         public IActionResult AdminOnly()
         {
             return Ok(new { message = "This is an admin-only endpoint", user = User.Identity?.Name });
         }
 
-        [HttpPost("verify-email")]
-        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDto verifyEmailDto)
-        {
-            try
-            {
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.EmailVerificationToken == verifyEmailDto.Token);
-
-                if (user == null)
-                {
-                    return BadRequest(new { message = "Invalid verification token" });
-                }
-
-                if (user.EmailVerificationTokenExpires < DateTime.UtcNow)
-                {
-                    return BadRequest(new { message = "Verification token has expired" });
-                }
-
-                if (user.IsEmailVerified)
-                {
-                    return BadRequest(new { message = "Email is already verified" });
-                }
-
-                // Mark email as verified
-                user.IsEmailVerified = true;
-                user.EmailVerificationToken = null;
-                user.EmailVerificationTokenExpires = null;
-                user.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Email verified for user {Email}", user.Email);
-
-                return Ok(new { message = "Email verified successfully" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error during email verification");
-                return StatusCode(500, new { message = "An error occurred during email verification" });
-            }
-        }
-
-        [HttpPost("resend-verification")]
-        public async Task<IActionResult> ResendVerificationEmail([FromBody] ResendVerificationDto resendDto)
-        {
-            try
-            {
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Email == resendDto.Email.ToLowerInvariant());
-
-                if (user == null)
-                {
-                    // Don't reveal if email exists or not for security
-                    return Ok(new { message = "If the email exists, a verification email has been sent" });
-                }
-
-                if (user.IsEmailVerified)
-                {
-                    return BadRequest(new { message = "Email is already verified" });
-                }
-
-                // Generate new verification token
-                var verificationToken = Guid.NewGuid().ToString();
-                user.EmailVerificationToken = verificationToken;
-                user.EmailVerificationTokenExpires = DateTime.UtcNow.AddHours(24); // 24 hours expiry
-                user.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                // TODO: Send verification email here
-                // For now, we'll just log it
-                _logger.LogInformation("Verification email would be sent to {Email} with token {Token}", 
-                    user.Email, verificationToken);
-
-                return Ok(new { message = "If the email exists, a verification email has been sent" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error during resend verification");
-                return StatusCode(500, new { message = "An error occurred while resending verification email" });
-            }
-        }
+        // Email verification removed
 
         private void SetRefreshTokenCookie(string refreshToken)
         {
             var cookieOptions = new CookieOptions
             {
-                HttpOnly = true, // Prevent XSS attacks
-                Secure = true, // Only send over HTTPS
-                SameSite = SameSiteMode.Strict, // Prevent CSRF attacks
+                HttpOnly = true,
                 Expires = _jwtService.GetRefreshTokenExpiry(),
-                Path = "/api/authentication" // Restrict cookie path
+                // Path root so it's sent to all auth endpoints
+                Path = "/"
             };
+
+            // Modern browsers require Secure=true when SameSite=None
+            cookieOptions.Secure = true;
+            cookieOptions.SameSite = SameSiteMode.None;
 
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }

@@ -1,94 +1,27 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PlusIcon, EllipsisHorizontalIcon, CalendarIcon } from "@heroicons/react/24/outline";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { authService } from "@/lib/auth";
 
 interface KanbanBoardProps {
   projectId: string;
   onBack: () => void;
 }
 
-const mockTasks = {
-  todo: [
-    {
-      id: "1",
-      title: "Literature Review - AI Bias Papers",
-      description: "Review recent papers on algorithmic bias in healthcare AI systems",
-      priority: "high",
-      assignee: { name: "Emily Johnson", initials: "EJ" },
-      dueDate: "Dec 20",
-      labels: ["research", "literature"]
-    },
-    {
-      id: "2", 
-      title: "Survey Design",
-      description: "Create patient survey for ethics perception study",
-      priority: "medium",
-      assignee: { name: "Michael Kim", initials: "MK" },
-      dueDate: "Dec 18",
-      labels: ["survey", "design"]
-    },
-    {
-      id: "3",
-      title: "IRB Approval Documentation",
-      description: "Prepare ethics review board submission",
-      priority: "high",
-      assignee: { name: "Dr. Sarah Chen", initials: "SC" },
-      dueDate: "Dec 15",
-      labels: ["approval", "documentation"]
-    }
-  ],
-  inProgress: [
-    {
-      id: "4",
-      title: "Data Collection - Hospital A",
-      description: "Collecting anonymized patient data from partner hospital",
-      priority: "high",
-      assignee: { name: "Alex Rivera", initials: "AR" },
-      dueDate: "Dec 22",
-      labels: ["data", "collection"]
-    },
-    {
-      id: "5",
-      title: "Interview Analysis",
-      description: "Transcribe and analyze healthcare provider interviews",
-      priority: "medium",
-      assignee: { name: "Emily Johnson", initials: "EJ" },
-      dueDate: "Dec 25",
-      labels: ["interviews", "analysis"]
-    }
-  ],
-  done: [
-    {
-      id: "6",
-      title: "Ethics Framework Development",
-      description: "Created comprehensive ethics evaluation framework",
-      priority: "high",
-      assignee: { name: "Dr. Sarah Chen", initials: "SC" },
-      dueDate: "Dec 10",
-      labels: ["framework", "ethics"]
-    },
-    {
-      id: "7",
-      title: "Research Proposal",
-      description: "Finalized and submitted research proposal",
-      priority: "high",
-      assignee: { name: "Dr. Sarah Chen", initials: "SC" },
-      dueDate: "Nov 30",
-      labels: ["proposal", "documentation"]
-    },
-    {
-      id: "8",
-      title: "Team Formation",
-      description: "Assembled research team and defined roles",
-      priority: "medium",
-      assignee: { name: "Dr. Sarah Chen", initials: "SC" },
-      dueDate: "Nov 25",
-      labels: ["team", "planning"]
-    }
-  ]
-};
+// Interface for task data from backend
+interface Task {
+  taskId: number;
+  projectId: number;
+  title: string;
+  type: string | null;
+  priority: string | null;
+  dueDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const priorityColors = {
   high: "bg-red-100 text-red-800",
@@ -97,6 +30,56 @@ const priorityColors = {
 };
 
 export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        if (authService.isAuthenticated()) {
+          const tasksData = await authService.makeAuthenticatedRequest<Task[]>('/api/tasks');
+          // Filter tasks for this project
+          const projectTasks = tasksData.filter(task => task.projectId.toString() === projectId);
+          setTasks(projectTasks);
+        }
+      } catch (error) {
+        console.error('Failed to fetch tasks:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, [projectId]);
+
+  // Group tasks by status (since we don't have status in the backend, we'll use a simple grouping)
+  const todoTasks = tasks.slice(0, Math.ceil(tasks.length / 3));
+  const inProgressTasks = tasks.slice(Math.ceil(tasks.length / 3), Math.ceil(tasks.length * 2 / 3));
+  const doneTasks = tasks.slice(Math.ceil(tasks.length * 2 / 3));
+
+  // Helper function to format due date
+  const formatDueDate = (dateString: string | null): string => {
+    if (!dateString) return 'No date';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  // Helper function to get initials from title
+  const getInitials = (title: string): string => {
+    return title.split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-blue-600 rounded-full animate-pulse mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading tasks...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -111,11 +94,11 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
           <div className="bg-gray-100 rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-gray-700">To Do</h3>
-              <Badge variant="secondary">{mockTasks.todo.length}</Badge>
+              <Badge variant="secondary">{todoTasks.length}</Badge>
             </div>
             <div className="space-y-3">
-              {mockTasks.todo.map((task) => (
-                <Card key={task.id} className="cursor-pointer hover:shadow-md transition-shadow">
+              {todoTasks.map((task) => (
+                <Card key={task.taskId} className="cursor-pointer hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-medium">{task.title}</h4>
@@ -123,28 +106,29 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
                         <EllipsisHorizontalIcon className="w-4 h-4" />
                       </Button>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">{task.description}</p>
                     
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {task.labels.map((label) => (
-                        <Badge key={label} variant="outline" className="text-xs">
-                          {label}
+                    {task.type && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        <Badge variant="outline" className="text-xs">
+                          {task.type}
                         </Badge>
-                      ))}
-                    </div>
+                      </div>
+                    )}
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Avatar className="w-6 h-6">
-                          <AvatarFallback className="text-xs">{task.assignee.initials}</AvatarFallback>
+                          <AvatarFallback className="text-xs">{getInitials(task.title)}</AvatarFallback>
                         </Avatar>
-                        <Badge className={`text-xs ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
-                          {task.priority}
-                        </Badge>
+                        {task.priority && (
+                          <Badge className={`text-xs ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
+                            {task.priority}
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center text-xs text-gray-500">
                         <CalendarIcon className="w-3 h-3 mr-1" />
-                        {task.dueDate}
+                        {formatDueDate(task.dueDate)}
                       </div>
                     </div>
                   </CardContent>
@@ -152,7 +136,7 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
               ))}
               <Button variant="outline" className="w-full justify-start text-gray-500">
                 <PlusIcon className="w-4 h-4 mr-2" />
-                1, 2, 3
+                Add Task
               </Button>
             </div>
           </div>
@@ -161,11 +145,11 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
           <div className="bg-blue-50 rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-blue-700">In Progress</h3>
-              <Badge variant="secondary">{mockTasks.inProgress.length}</Badge>
+              <Badge variant="secondary">{inProgressTasks.length}</Badge>
             </div>
             <div className="space-y-3">
-              {mockTasks.inProgress.map((task) => (
-                <Card key={task.id} className="cursor-pointer hover:shadow-md transition-shadow">
+              {inProgressTasks.map((task) => (
+                <Card key={task.taskId} className="cursor-pointer hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-medium">{task.title}</h4>
@@ -173,28 +157,29 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
                         <EllipsisHorizontalIcon className="w-4 h-4" />
                       </Button>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">{task.description}</p>
                     
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {task.labels.map((label) => (
-                        <Badge key={label} variant="outline" className="text-xs">
-                          {label}
+                    {task.type && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        <Badge variant="outline" className="text-xs">
+                          {task.type}
                         </Badge>
-                      ))}
-                    </div>
+                      </div>
+                    )}
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Avatar className="w-6 h-6">
-                          <AvatarFallback className="text-xs">{task.assignee.initials}</AvatarFallback>
+                          <AvatarFallback className="text-xs">{getInitials(task.title)}</AvatarFallback>
                         </Avatar>
-                        <Badge className={`text-xs ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
-                          {task.priority}
-                        </Badge>
+                        {task.priority && (
+                          <Badge className={`text-xs ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
+                            {task.priority}
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center text-xs text-gray-500">
                         <CalendarIcon className="w-3 h-3 mr-1" />
-                        {task.dueDate}
+                        {formatDueDate(task.dueDate)}
                       </div>
                     </div>
                   </CardContent>
@@ -202,7 +187,7 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
               ))}
               <Button variant="outline" className="w-full justify-start text-gray-500">
                 <PlusIcon className="w-4 h-4 mr-2" />
-                View more tasks
+                Add Task
               </Button>
             </div>
           </div>
@@ -211,11 +196,11 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
           <div className="bg-green-50 rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-green-700">Done</h3>
-              <Badge variant="secondary">{mockTasks.done.length}</Badge>
+              <Badge variant="secondary">{doneTasks.length}</Badge>
             </div>
             <div className="space-y-3">
-              {mockTasks.done.map((task) => (
-                <Card key={task.id} className="cursor-pointer hover:shadow-md transition-shadow opacity-75">
+              {doneTasks.map((task) => (
+                <Card key={task.taskId} className="cursor-pointer hover:shadow-md transition-shadow opacity-75">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-medium line-through">{task.title}</h4>
@@ -223,28 +208,29 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
                         <EllipsisHorizontalIcon className="w-4 h-4" />
                       </Button>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">{task.description}</p>
                     
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {task.labels.map((label) => (
-                        <Badge key={label} variant="outline" className="text-xs">
-                          {label}
+                    {task.type && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        <Badge variant="outline" className="text-xs">
+                          {task.type}
                         </Badge>
-                      ))}
-                    </div>
+                      </div>
+                    )}
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Avatar className="w-6 h-6">
-                          <AvatarFallback className="text-xs">{task.assignee.initials}</AvatarFallback>
+                          <AvatarFallback className="text-xs">{getInitials(task.title)}</AvatarFallback>
                         </Avatar>
-                        <Badge className={`text-xs ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
-                          {task.priority}
-                        </Badge>
+                        {task.priority && (
+                          <Badge className={`text-xs ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
+                            {task.priority}
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center text-xs text-gray-500">
                         <CalendarIcon className="w-3 h-3 mr-1" />
-                        {task.dueDate}
+                        {formatDueDate(task.dueDate)}
                       </div>
                     </div>
                   </CardContent>

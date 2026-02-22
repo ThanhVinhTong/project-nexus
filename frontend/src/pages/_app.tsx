@@ -17,17 +17,21 @@ export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const authenticated = authService.isAuthenticated();
+        // Initialize auth service (restore tokens if possible)
+        const authenticated = await authService.initialize();
+        console.log('App layout auth check:', { authenticated, pathname: router.pathname, isPublicRoute });
         setIsAuthenticated(authenticated);
         
         // If user is not authenticated and trying to access protected route
         if (!authenticated && !isPublicRoute) {
+          console.log('Redirecting to login - not authenticated');
           router.replace('/login');
           return;
         }
         
         // If user is authenticated and trying to access auth pages
         if (authenticated && isPublicRoute) {
+          console.log('Redirecting to dashboard - already authenticated');
           router.replace('/dashboard');
           return;
         }

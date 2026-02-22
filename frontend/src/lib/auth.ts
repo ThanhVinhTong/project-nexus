@@ -9,7 +9,6 @@ interface User {
   role: string;
   createdAt: string;
   lastLoginAt?: string;
-  isEmailVerified: boolean;
 }
 
 interface AuthResponse {
@@ -45,6 +44,8 @@ class AuthService {
 
   // Get current access token
   getAccessToken(): string | null {
+    return 'demo-token'; // Always return a dummy token for demo
+    /*
     if (!this.accessToken || !this.tokenExpiry) return null;
     
     // Check if token is expired
@@ -55,6 +56,7 @@ class AuthService {
     }
     
     return this.accessToken;
+    */
   }
 
   // Clear stored tokens
@@ -65,14 +67,14 @@ class AuthService {
 
   // Make authenticated API request
   async makeAuthenticatedRequest<T>(
-    endpoint: string, 
+    endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
     const token = this.getAccessToken();
-    
-    if (!token) {
-      throw new Error('No valid access token available');
-    }
+    // Temporarily allow request without token for demo
+    // if (!token) {
+    //   throw new Error('No valid access token available');
+    // }
 
     const response = await fetch(`${this.API_BASE_URL}${endpoint}`, {
       ...options,
@@ -83,6 +85,8 @@ class AuthService {
       },
       credentials: 'include', // Include cookies for refresh token
     });
+
+    console.log('makeAuthenticatedRequest response', response);
 
     // Handle token expiration
     if (response.status === 401 && response.headers.get('Token-Expired')) {
@@ -113,7 +117,7 @@ class AuthService {
       credentials: 'include', // Include cookies for refresh token
       body: JSON.stringify(loginData),
     });
-
+    console.log('2');
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Login failed');
@@ -121,7 +125,7 @@ class AuthService {
 
     const authResponse: AuthResponse = await response.json();
     this.setAccessToken(authResponse.accessToken, authResponse.expiresAt);
-    
+
     return authResponse;
   }
 
@@ -135,7 +139,7 @@ class AuthService {
       credentials: 'include', // Include cookies for refresh token
       body: JSON.stringify(registerData),
     });
-
+    console.log('3');
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Registration failed');
@@ -143,23 +147,36 @@ class AuthService {
 
     const authResponse: AuthResponse = await response.json();
     this.setAccessToken(authResponse.accessToken, authResponse.expiresAt);
-    
+
     return authResponse;
   }
 
   // Refresh access token using refresh token cookie
   async refreshAccessToken(): Promise<void> {
-    const response = await fetch(`${this.API_BASE_URL}/api/authentication/refresh`, {
+    // First try: no body, no content-type (common pattern when server reads cookie only)
+    let response = await fetch(`${this.API_BASE_URL}/api/authentication/refresh`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Include refresh token cookie
-      body: JSON.stringify({ refreshToken: '' }), // Empty string since we use cookies
+      credentials: 'include',
     });
+    console.log('4');
+    console.log('refreshAccessToken response', response);
+    // Fallback: send empty JSON if server requires a body
+    if (!response.ok) {
+      try {
+        response = await fetch(`${this.API_BASE_URL}/api/authentication/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ refreshToken: '' }),
+        });
+      } catch (_) {
+        // ignore and handle below
+      }
+    }
 
     if (!response.ok) {
-      throw new Error('Token refresh failed');
+      const errorText = await response.text().catch(() => '');
+      throw new Error(`Token refresh failed: ${response.status} ${response.statusText} ${errorText}`.trim());
     }
 
     const authResponse: AuthResponse = await response.json();
@@ -168,6 +185,7 @@ class AuthService {
 
   // Logout user
   async logout(): Promise<void> {
+    console.log('5');
     try {
       await this.makeAuthenticatedRequest('/api/authentication/logout', {
         method: 'POST',
@@ -182,15 +200,45 @@ class AuthService {
 
   // Get user profile
   async getProfile(): Promise<User> {
-    return this.makeAuthenticatedRequest<User>('/api/authentication/profile');
+    // Return dummy user for demo
+    return {
+      userId: 1,
+      legalName: 'Demo User',
+      userName: 'demouser',
+      email: 'demo@example.com',
+      role: 'Admin',
+      createdAt: new Date().toISOString()
+    };
+    // return this.makeAuthenticatedRequest<User>('/api/authentication/profile');
+  }
+
+  // Initialize auth service (call this on app startup)
+  async initialize(): Promise<boolean> {
+    console.log('7');
+    try {
+      // If we already have a valid access token, we're good
+      if (this.getAccessToken() !== null) {
+        return true;
+      }
+
+      // Always attempt a silent refresh once on startup.
+      // The server will read the HttpOnly refresh cookie if present.
+      // await this.refreshAccessToken();
+      return this.getAccessToken() !== null;
+    } catch (error) {
+      console.error('Auth initialization failed:', error);
+      return false;
+    }
   }
 
   // Check if user is authenticated
   isAuthenticated(): boolean {
-    return this.getAccessToken() !== null;
+    return true; // Always true for demo
+    // Only trust the in-memory access token. HttpOnly cookies are not readable here.
+    // return this.getAccessToken() !== null;
   }
 }
 
 // Export singleton instance
 export const authService = new AuthService();
-export type { User, LoginData, RegisterData, AuthResponse };
+export type { AuthService, User, LoginData, RegisterData, AuthResponse };

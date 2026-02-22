@@ -41,8 +41,8 @@ namespace ProjectNexus.API.Models.DTOs
 
     public class RefreshTokenDto
     {
-        [Required]
-        public string RefreshToken { get; set; } = null!;
+        // Optional: if omitted, the server will read the HttpOnly cookie instead
+        public string? RefreshToken { get; set; }
     }
 
     public class AuthResponseDto
@@ -62,19 +62,7 @@ namespace ProjectNexus.API.Models.DTOs
         public string Role { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
-        public bool IsEmailVerified { get; set; }
     }
 
-    public class VerifyEmailDto
-    {
-        [Required]
-        public string Token { get; set; } = null!;
-    }
-
-    public class ResendVerificationDto
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = null!;
-    }
+    // Email verification removed
 }

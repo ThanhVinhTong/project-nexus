@@ -1,17 +1,96 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { BookmarkIcon, EyeIcon, ClockIcon, MagnifyingGlassIcon, PlusIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 import { Badge } from "@/components/ui/badge";
-import { mockNotes } from "@/lib/mock-data";
+import { authService } from "@/lib/auth";
+
+// Interface for note data from backend
+interface Note {
+  noteId: number;
+  projectId: number;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function NotesPage() {
-  const [selectedNote, setSelectedNote] = useState(mockNotes[0]);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isPreview, setIsPreview] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const fetchNotes = async () => {
+      const sampleNotes = [
+        {
+          noteId: 1,
+          projectId: 1,
+          content: "# Research Methodology\n\n- [x] Define research questions\n- [x] Literature review\n- [ ] Data collection\n\nThis note covers the primary methodology used in the Nexus Core Platform development.",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          noteId: 2,
+          projectId: 2,
+          content: "# AI Model Evaluation\n\nInitial tests show a **94% accuracy** on the validation set. Need to investigate the outliers in the test data.",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+
+      const setSampleData = () => {
+        setNotes(sampleNotes);
+        if (sampleNotes.length > 0) {
+          setSelectedNote(sampleNotes[0]);
+        }
+      };
+
+      try {
+        if (authService.isAuthenticated()) {
+          try {
+            let notesData = await authService.makeAuthenticatedRequest<Note[]>('/api/notes');
+            if (Array.isArray(notesData) && notesData.length > 0) {
+              setNotes(notesData);
+              setSelectedNote(notesData[0]);
+            } else {
+              setSampleData();
+            }
+          } catch (e) {
+            console.warn('API call failed, using sample notes:', e);
+            setSampleData();
+          }
+        }
+      } catch (error) {
+        console.error('Failed to authenticate or fetch notes:', error);
+        setSampleData();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNotes();
+  }, []);
+
+  const filteredNotes = notes.filter(note =>
+    note.content.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (isLoading) {
+    return (
+      <div className="h-[calc(100vh-6rem)] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-blue-600 rounded-full animate-pulse mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading notes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[calc(100vh-6rem)] flex flex-col">
@@ -50,102 +129,115 @@ export default function NotesPage() {
             </div>
             <div className="relative">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input 
-                placeholder="Search notes..." 
+              <Input
+                placeholder="Search notes..."
                 className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto">
             <div className="p-2 space-y-2">
-              {mockNotes.map((note) => (
-                <Card 
-                  key={note.id} 
-                  className={`cursor-pointer transition-colors ${
-                    selectedNote.id === note.id ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
-                  }`}
-                  onClick={() => setSelectedNote(note)}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-start space-x-2">
-                      <DocumentTextIcon className="w-4 h-4 text-gray-500 mt-1 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">{note.title}</h4>
-                        <p className="text-xs text-gray-500 mt-1">{new Date(note.updatedAt).toLocaleDateString('en-US')}</p>
-                        <div className="flex gap-1 mt-2">
-                          {note.tags.slice(0, 2).map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                          {note.tags.length > 2 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{note.tags.length - 2}
-                            </Badge>
-                          )}
+              {filteredNotes.length > 0 ? (
+                filteredNotes.map((note) => (
+                  <Card
+                    key={note.noteId}
+                    className={`cursor-pointer transition-colors ${selectedNote?.noteId === note.noteId ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
+                      }`}
+                    onClick={() => setSelectedNote(note)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-start space-x-2">
+                        <DocumentTextIcon className="w-4 h-4 text-gray-500 mt-1 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate">
+                            Note #{note.noteId}
+                          </h4>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {new Date(note.updatedAt).toLocaleDateString('en-US')}
+                          </p>
+                          <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                            {note.content.substring(0, 100)}...
+                          </p>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="p-4 text-center text-gray-500">
+                  {searchTerm ? 'No notes found matching your search.' : 'No notes available.'}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Main Editor Area */}
         <div className="flex-1 flex flex-col">
-          {/* Note Header */}
-          <div className="bg-white border-b border-gray-200 p-4">
-            <Input 
-              value={selectedNote.title}
-              className="text-xl font-medium border-none p-0 focus:ring-0"
-              placeholder="Note title..."
-            />
-            <div className="flex items-center justify-between mt-2">
-              <div className="flex gap-1">
-                {selectedNote.tags.map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
+          {selectedNote ? (
+            <>
+              {/* Note Header */}
+              <div className="bg-white border-b border-gray-200 p-4">
+                <Input
+                  value={`Note #${selectedNote.noteId}`}
+                  className="text-xl font-medium border-none p-0 focus:ring-0"
+                  placeholder="Note title..."
+                  readOnly
+                />
+                <div className="flex items-center justify-between mt-2">
+                  <div className="flex gap-1">
+                    <Badge variant="outline" className="text-xs">
+                      Project #{selectedNote.projectId}
+                    </Badge>
+                  </div>
+                  <span className="text-sm text-gray-500">Last modified {new Date(selectedNote.updatedAt).toLocaleDateString()}</span>
+                </div>
               </div>
-              <span className="text-sm text-gray-500">Last modified {new Date(selectedNote.updatedAt).toLocaleDateString()}</span>
-            </div>
-          </div>
 
-          {/* Editor/Preview Area */}
-          <div className="flex-1 bg-white">
-            {isPreview ? (
-              <div className="p-6 prose prose-gray max-w-none">
-                <div 
-                  className="markdown-content"
-                  dangerouslySetInnerHTML={{
-                    __html: selectedNote.content
-                      .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-                      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-                      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-                      .replace(/^- (.*$)/gm, '<li>$1</li>')
-                      .replace(/^\* (.*$)/gm, '<li>$1</li>')
-                      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-                      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-                      .replace(/\[x\] (.*$)/gm, '<input type="checkbox" checked disabled> $1')
-                      .replace(/\[ \] (.*$)/gm, '<input type="checkbox" disabled> $1')
-                      .replace(/\n/g, '<br>')
-                  }}
-                />
+              {/* Editor/Preview Area */}
+              <div className="flex-1 bg-white">
+                {isPreview ? (
+                  <div className="p-6 prose prose-gray max-w-none">
+                    <div
+                      className="markdown-content"
+                      dangerouslySetInnerHTML={{
+                        __html: selectedNote.content
+                          .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                          .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                          .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                          .replace(/^- (.*$)/gm, '<li>$1</li>')
+                          .replace(/^\* (.*$)/gm, '<li>$1</li>')
+                          .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                          .replace(/\[x\] (.*$)/gm, '<input type="checkbox" checked disabled> $1')
+                          .replace(/\[ \] (.*$)/gm, '<input type="checkbox" disabled> $1')
+                          .replace(/\n/g, '<br>')
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-full">
+                    <Textarea
+                      value={selectedNote.content}
+                      className="h-full resize-none border-none rounded-none focus:ring-0 p-6 font-mono text-sm"
+                      placeholder="Start writing your notes in Markdown..."
+                      readOnly
+                    />
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="h-full">
-                <Textarea 
-                  value={selectedNote.content}
-                  className="h-full resize-none border-none rounded-none focus:ring-0 p-6 font-mono text-sm"
-                  placeholder="Start writing your notes in Markdown..."
-                />
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center bg-white">
+              <div className="text-center text-gray-500">
+                <DocumentTextIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>Select a note to view its content</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Right Sidebar - Tools */}

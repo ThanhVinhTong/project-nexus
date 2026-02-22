@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectNexus.API.Data;
@@ -7,18 +8,36 @@ namespace ProjectNexus.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous]
 public class ProjectsController : ControllerBase
 {
     private readonly AppDbContext _db;
     public ProjectsController(AppDbContext db) => _db = db;
 
     [HttpGet]
+    // [Authorize]
     public async Task<IActionResult> GetProjects()
     {
         try
         {
+            // Get current authenticated user id (Hardcoded for demo)
+            var userIdClaim = "1"; 
+            /*
+            var userIdClaim = User?.Claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(userIdClaim))
+            {
+                return Unauthorized();
+            }
+            */
+
             var projects = await _db.Projects
-                .Include(p => p.ProjectUsers) // Include related data
+                .Include(p => p.ProjectUsers)
+                    .ThenInclude(pu => pu.User)
+                .Include(p => p.Tasks)
+                .Include(p => p.Notes)
+                .Include(p => p.References)
+                .Include(p => p.Activities)
+                .Where(p => p.ProjectUsers.Any(pu => pu.UserId.ToString() == userIdClaim))
                 .ToListAsync();
             return Ok(projects);
         }
@@ -29,6 +48,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    // [Authorize]
     public async Task<IActionResult> GetProject(int id)
     {
         try
@@ -53,6 +73,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpPost]
+    // [Authorize]
     public async Task<IActionResult> CreateProject([FromBody] Project project)
     {
         try
@@ -75,6 +96,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    // [Authorize]
     public async Task<IActionResult> UpdateProject(int id, [FromBody] Project project)
     {
         try
@@ -105,6 +127,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    // [Authorize]
     public async Task<IActionResult> DeleteProject(int id)
     {
         try
