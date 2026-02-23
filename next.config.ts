@@ -3,9 +3,9 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   /* static export options */
-  // output: 'export',
-  // basePath: '/project-nexus',
-  // assetPrefix: '/project-nexus',
+  output: 'export',
+  basePath: process.env.NODE_ENV === 'production' ? '/project-nexus' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/project-nexus' : '',
 
   images: {
     unoptimized: true,
