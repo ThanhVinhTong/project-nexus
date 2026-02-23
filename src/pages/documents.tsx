@@ -76,7 +76,7 @@ export default function DocumentsPage() {
       try {
         if (authService.isAuthenticated()) {
           try {
-            let referencesData = await authService.makeAuthenticatedRequest<Reference[]>('/api/references');
+            const referencesData = await authService.makeAuthenticatedRequest<Reference[]>('/api/references');
             if (Array.isArray(referencesData) && referencesData.length > 0) {
               setReferences(referencesData);
             } else {

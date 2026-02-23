@@ -3,13 +3,9 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   /* static export options */
-  output: 'export',
-
-  // TO DEPLOY TO GITHUB PAGES:
-  // If your repository is 'project-nexus', set basePath and assetPrefix to '/project-nexus'
-  // If you are using a custom domain or username.github.io, you can remove these.
-  basePath: '/project-nexus',
-  assetPrefix: '/project-nexus',
+  // output: 'export',
+  // basePath: '/project-nexus',
+  // assetPrefix: '/project-nexus',
 
   images: {
     unoptimized: true,

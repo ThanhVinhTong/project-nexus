@@ -12,8 +12,16 @@ interface ProjectNotesEditorProps {
   onBack: () => void;
 }
 
-const getProjectNotes = (projectId: string) => {
-  const projectNotesMap: { [key: string]: any[] } = {
+interface Note {
+  id: string;
+  title: string;
+  content: string;
+  lastModified: string;
+  tags: string[];
+}
+
+const getProjectNotes = (projectId: string): Note[] => {
+  const projectNotesMap: { [key: string]: Note[] } = {
     "1": [ // AI Ethics Research
       {
         id: "p1-1",

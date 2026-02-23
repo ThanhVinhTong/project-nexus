@@ -19,11 +19,11 @@ interface Project {
   deadline: string | null;
   createdAt: string;
   updatedAt: string;
-  tasks: any[];
-  projectUsers: any[];
-  notes: any[];
-  references: any[];
-  activities: any[];
+  tasks: number[];
+  projectUsers: number[];
+  notes: number[];
+  references: number[];
+  activities: number[];
   category?: string; // Added for demo
 }
 

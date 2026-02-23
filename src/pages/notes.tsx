@@ -54,7 +54,7 @@ export default function NotesPage() {
       try {
         if (authService.isAuthenticated()) {
           try {
-            let notesData = await authService.makeAuthenticatedRequest<Note[]>('/api/notes');
+            const notesData = await authService.makeAuthenticatedRequest<Note[]>('/api/notes');
             if (Array.isArray(notesData) && notesData.length > 0) {
               setNotes(notesData);
               setSelectedNote(notesData[0]);

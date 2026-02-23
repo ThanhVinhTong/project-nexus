@@ -82,7 +82,7 @@ export function Schedule({ onBack }: ScheduleProps) {
         if (authService.isAuthenticated()) {
           try {
             // Fetch tasks and projects in parallel
-            let [tasksData, projectsData] = await Promise.all([
+            const [tasksData, projectsData] = await Promise.all([
               authService.makeAuthenticatedRequest<Task[]>('/api/tasks'),
               authService.makeAuthenticatedRequest<Project[]>('/api/projects')
             ]);

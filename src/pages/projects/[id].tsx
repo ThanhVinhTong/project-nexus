@@ -128,7 +128,7 @@ export default function ProjectDetailPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <h3 className="text-lg font-medium text-gray-900 mb-2">Project not found</h3>
-          <p className="text-gray-600">The project you're looking for doesn't exist or you don't have access to it.</p>
+          <p className="text-gray-600">The project you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
         </div>
       </div>
     );
@@ -196,7 +196,7 @@ export default function ProjectDetailPage() {
             </CardContent>
           </Card>
         </div>
-        
+
         <div>
           <Card>
             <CardHeader>
@@ -229,11 +229,11 @@ export default function ProjectDetailPage() {
           <TabsTrigger value="notes">Notes</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="tasks" className="mt-6">
-          <KanbanBoard projectId={projectId as string} onBack={() => {}} />
+          <KanbanBoard projectId={projectId as string} onBack={() => { }} />
         </TabsContent>
-        
+
         <TabsContent value="references" className="mt-6">
           <Card>
             <CardHeader>
@@ -275,9 +275,9 @@ export default function ProjectDetailPage() {
                               </span>
                             </div>
                             {reference.url && (
-                              <a 
+                              <a
                                 href={reference.url}
-                                target="_blank" 
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
                               >
@@ -300,7 +300,7 @@ export default function ProjectDetailPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="notes" className="mt-6">
           <Card>
             <CardHeader>
@@ -332,7 +332,7 @@ export default function ProjectDetailPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="activity" className="mt-6">
           <Card>
             <CardHeader>

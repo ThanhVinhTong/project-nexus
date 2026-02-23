@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PlusIcon, EllipsisHorizontalIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, EllipsisHorizontalIcon, CalendarIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { authService } from "@/lib/auth";
 
@@ -25,7 +25,7 @@ interface Task {
 
 const priorityColors = {
   high: "bg-red-100 text-red-800",
-  medium: "bg-yellow-100 text-yellow-800", 
+  medium: "bg-yellow-100 text-yellow-800",
   low: "bg-green-100 text-green-800"
 };
 
@@ -83,10 +83,20 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <Button>
+      <header className="bg-white border-b border-gray-200 px-6 py-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" size="icon" onClick={onBack}>
+              <ArrowLeftIcon className="w-5 h-5" />
+            </Button>
+            <h1 className="text-2xl font-bold text-gray-800">Project Board</h1>
+          </div>
+          <Button>
             <PlusIcon className="w-4 h-4 mr-2" />
             Add Task
-      </Button>
+          </Button>
+        </div>
+      </header>
 
       <div className="p-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -106,7 +116,7 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
                         <EllipsisHorizontalIcon className="w-4 h-4" />
                       </Button>
                     </div>
-                    
+
                     {task.type && (
                       <div className="flex flex-wrap gap-1 mb-3">
                         <Badge variant="outline" className="text-xs">
@@ -114,7 +124,7 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
                         </Badge>
                       </div>
                     )}
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Avatar className="w-6 h-6">
@@ -157,7 +167,7 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
                         <EllipsisHorizontalIcon className="w-4 h-4" />
                       </Button>
                     </div>
-                    
+
                     {task.type && (
                       <div className="flex flex-wrap gap-1 mb-3">
                         <Badge variant="outline" className="text-xs">
@@ -165,7 +175,7 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
                         </Badge>
                       </div>
                     )}
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Avatar className="w-6 h-6">
@@ -208,7 +218,7 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
                         <EllipsisHorizontalIcon className="w-4 h-4" />
                       </Button>
                     </div>
-                    
+
                     {task.type && (
                       <div className="flex flex-wrap gap-1 mb-3">
                         <Badge variant="outline" className="text-xs">
@@ -216,7 +226,7 @@ export function KanbanBoard({ projectId, onBack }: KanbanBoardProps) {
                         </Badge>
                       </div>
                     )}
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Avatar className="w-6 h-6">
