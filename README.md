@@ -1,6 +1,9 @@
 # Project Nexus
 *A lightweight collaboration platform for research & project teams.*
 
+## Note
+Due to economic reason, I have turned off the database for this project which lead to the shutdown of backend so that I can spend them on my recent project. However, the demo for this application still function and have been moved to "https://thanhvinhtong.github.io/project-nexus/", feel free to clone and then tailor this project to your taste. Best wish from the author - Vincent Tong - and happy coding!
+
 ## Overview
 Project Nexus is a **full-stack collaboration platform** designed to help teams manage projects, tasks, activities, references, and research notes in one place.  
 Think of it as a **lightweight Notion/Trello for researchers** — with project management, user collaboration, activity tracking, and versioned notes.
