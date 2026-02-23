@@ -1,7 +1,7 @@
-# 🚀 Project Nexus
+# Project Nexus
 *A lightweight collaboration platform for research & project teams.*
 
-## 📌 Overview
+## Overview
 Project Nexus is a **full-stack collaboration platform** designed to help teams manage projects, tasks, activities, references, and research notes in one place.  
 Think of it as a **lightweight Notion/Trello for researchers** — with project management, user collaboration, activity tracking, and versioned notes.
 
@@ -9,7 +9,7 @@ This project features a **comprehensive backend API** with 8 controllers and 8 d
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 - **Frontend**: Next.js + TailwindCSS + TypeScript
 - **Backend**: ASP.NET Core Web API (.NET 9)
 - **Database**: PostgreSQL + Entity Framework Core
@@ -20,7 +20,7 @@ This project features a **comprehensive backend API** with 8 controllers and 8 d
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 ```
 project-nexus/
 ├── frontend/ # Next.js app (UI, pages, components)
@@ -30,7 +30,7 @@ project-nexus/
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ### Backend Implementation
 - **8 Controllers**: Users, Projects, Tasks, Notes, Activities, References, ProjectUsers, UserTasks
@@ -47,7 +47,7 @@ project-nexus/
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 **Core Tables**
 - **User** → id, legalName, userName, email, hashedPassword, role, createdAt, updatedAt
 - **Project** → id, title, description, deadline, status, createdAt, updatedAt
@@ -62,7 +62,7 @@ project-nexus/
 
 ---
 
-## ⚡ Setup Instructions
+## Setup Instructions
 
 ### Backend (ASP.NET Core API)
 ```bash
@@ -84,7 +84,7 @@ npm run dev
 - Frontend runs on: http://localhost:3000
 - Configured to connect to backend API
 
-## 📡 API Endpoints
+## API Endpoints
 ```
 Users
     GET /api/users
@@ -116,20 +116,20 @@ User Tasks
     POST /api/usertasks
 ```
 
-## ✅ Current Features
+## Current Features
 **Implemented & Working:**
-- ✅ User management with roles and permissions
-- ✅ Project creation and management
-- ✅ Task management with assignments
-- ✅ Notes system with versioning
-- ✅ Activity logging and tracking
-- ✅ Reference management
-- ✅ User-project relationships
-- ✅ User-task assignments
-- ✅ Full REST API with Swagger documentation
-- ✅ Database migrations and seeding
+- User management with roles and permissions
+- Project creation and management
+- Task management with assignments
+- Notes system with versioning
+- Activity logging and tracking
+- Reference management
+- User-project relationships
+- User-task assignments
+- Full REST API with Swagger documentation
+- Database migrations and seeding
 
-## 🚀 Future Extensions
+## Future Extensions
 - **Authentication**: Real OAuth login (Google/Microsoft)
 - **File Management**: File upload and storage system
 - **Notifications**: Rich notifications (email + in-app)
